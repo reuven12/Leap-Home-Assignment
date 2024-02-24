@@ -5,7 +5,7 @@ import cors from "cors";
 import config from './config';
 import UsersRouter from './router';
 import { corsOptions } from './utils/utils';
-import { serverErrorHandler } from './utils/errorHandlers';
+import { serverErrorHandler } from './utils/errors/errorHandlers';
 
 export class Server {
   private static _instance: Server;

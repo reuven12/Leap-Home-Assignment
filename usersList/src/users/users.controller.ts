@@ -1,28 +1,65 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
+import { UsersRepository } from "./users.repository";
 
 export class UsersController {
-  static getUsers(req: Request, res: Response) {
-    console.log('Get Users');
-    res.status(200).send('Get Users');
+ private usersRepository: UsersRepository;
+  constructor() {
+    this.usersRepository = new UsersRepository();
   }
 
-  static getUser(req: Request, res: Response) {
-    console.log('Get User');
-    res.status(200).send('Get User');
+  async getUsers(req: Request, res: Response) {
+    try {
+      const users = this.usersRepository.getUsers();
+      res.status(200).send(users);
+    } catch (error) {
+      res.status(500).send("Error while trying to get users");
+    }
   }
 
-  static createUser(req: Request, res: Response) {
-    console.log('Create User');
-    res.status(200).send('Create User');
+  async getUserById(req: Request, res: Response) {
+    try {
+      const user = this.usersRepository.getUserById();
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(500).send("Error while trying to get user");
+    }
   }
 
-  static updateUser(req: Request, res: Response) {
-    console.log('Update User');
-    res.status(200).send('Update User');
+  async getUserByName(req: Request, res: Response) {
+    try {
+      const user = this.usersRepository.getUserByName();
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(500).send("Error while trying to get user");
+    }
   }
 
-  static deleteUser(req: Request, res: Response) {
-    console.log('Delete User');
-    res.status(200).send('Delete User');
+  async createUser(req: Request, res: Response) {
+    try {
+      const user = this.usersRepository.createUser();
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(500).send("Error while trying to create user");
+    }
+  }
+
+  async updateUser(req: Request, res: Response) {
+    try {
+      const user = this.usersRepository.updateUser();
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(500).send("Error while trying to update user");
+    }
+    console.log("Update User");
+    res.status(200).send("Update User");
+  }
+
+  async deleteUser(req: Request, res: Response) {
+    try {
+      const user = this.usersRepository.deleteUser();
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(500).send("Error while trying to delete user");
+    }
   }
 }
