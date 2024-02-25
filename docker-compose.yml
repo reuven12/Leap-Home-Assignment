@@ -22,7 +22,7 @@ services:
 
   # react-app:
   #   image: react-app
-  #   build: ./LatencyTracker-ui
+  #   build: ./UserList-ui
   #   ports:
   #     - '3000:3000'
 
