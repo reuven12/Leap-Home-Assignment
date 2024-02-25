@@ -1,9 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class UserEntity {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id?: number;
 
   @Column({ nullable: true })
   page?: number;

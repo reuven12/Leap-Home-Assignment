@@ -1,5 +1,5 @@
-import express from 'express';
-import { ServerError, NotFoundError, ValidationError } from './errorTypes';
+import express from "express";
+import { ServerError, NotFoundError, ValidationError } from "./errorTypes";
 
 export const errorsHandler = (
   error: Error,
@@ -30,8 +30,8 @@ export const errorsHandler = (
   } else {
     console.error(`Unexpected Error: ${error.message}`);
     res.status(500).json({
-      type: 'Unexpected Error',
-      message: 'An unexpected error occurred',
+      type: "Unexpected Error",
+      message: "An unexpected error occurred",
     });
   }
 };

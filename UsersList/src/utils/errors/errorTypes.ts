@@ -5,25 +5,25 @@ export class ApplicationError extends Error {
 
     Error.captureStackTrace(this, this.constructor);
     this.name = this.constructor.name;
-    this.message = message || 'Error: Undefined Application Error';
+    this.message = message || "Error: Undefined Application Error";
     this.status = status || 500;
   }
 }
 
 export class ServerError extends ApplicationError {
-  constructor(message = 'Internal Server Error') {
-    super(message, 500);
+  constructor(message = "Internal Server Error", status = 500) {
+    super(message, status);
   }
 }
 
 export class NotFoundError extends ApplicationError {
-  constructor(message = 'Resource not found') {
-    super(message, 404);
+  constructor(message = "Resource not found", status = 404) {
+    super(message, status);
   }
 }
 
 export class ValidationError extends ApplicationError {
-  constructor(message = 'Validation error') {
-    super(message, 400);
+  constructor(message = "Validation error", status = 400) {
+    super(message, status);
   }
 }
