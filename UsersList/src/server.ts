@@ -1,7 +1,7 @@
 import express from 'express';
-import cookieParser from "cookie-parser";
-import morgan from "morgan";
-import cors from "cors";
+import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
+import cors from 'cors';
 import config from './config';
 import UsersRouter from './router';
 import { corsOptions } from './utils/utils';
@@ -39,7 +39,7 @@ export class Server {
   }
 
   private initializeRoutes() {
-    this.app.use('/api',UsersRouter);
+    this.app.use('/api/users', UsersRouter);
     this.app.use('*', (_req, res) => {
       res.status(404).send('Invalid Route');
     });

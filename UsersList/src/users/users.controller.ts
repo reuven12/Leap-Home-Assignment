@@ -8,56 +8,58 @@ export class UsersController {
     this.usersRepository = new UsersRepository();
   }
 
-  async getUsersByPage(req: Request, res: Response, next: NextFunction) {
+  getUsersByPage = async (req: Request, res: Response, next: NextFunction) => {
+    const page: number = parseInt(req.params.page);
     try {
-      const page: number = parseInt(req.params.page);
       const users = await this.usersRepository.getUsersByPage(page);
       res.status(200).send(users);
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async getUserById(req: Request, res: Response, next: NextFunction) {
+  getUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id: number = parseInt(req.params.id);
-      const user = this.usersRepository.getUserById(id);
+      const user = await this.usersRepository.getUserById(id);
+      console.log(user, 'controller');
+
       res.status(200).send(user);
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async createUser(req: Request, res: Response, next: NextFunction) {
+  createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const createUserRequest: User = req.body;
-      const user = this.usersRepository.createUser(createUserRequest);
+      const createUserRequest: User = { ...req.body };
+      const user = await this.usersRepository.createUser(createUserRequest);
       res.status(200).send(user);
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async updateUser(req: Request, res: Response, next: NextFunction) {
+  updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const updateUserRequest: Partial<User> = {
         id: req.params.id,
         ...req.body,
       };
-      const user = this.usersRepository.updateUser(updateUserRequest);
+      const user = await this.usersRepository.updateUser(updateUserRequest);
       res.status(200).send(user);
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async deleteUser(req: Request, res: Response, next: NextFunction) {
+  deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id: number = parseInt(req.params.id);
-      const user = this.usersRepository.deleteUser(id);
+      const user = await this.usersRepository.deleteUser(id);
       res.status(200).send();
     } catch (error) {
       next(error);
     }
-  }
+  };
 }

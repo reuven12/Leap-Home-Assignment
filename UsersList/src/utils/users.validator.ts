@@ -1,30 +1,67 @@
 import {
+  idParamSchema,
   getUsersByPageSchema,
-  getUserByIdSchema,
-  deleteUserSchema,
   createUserSchema,
   updateUserSchema,
-} from "./users.schema";
-import { NextFunction, Request, Response } from "express";
-
+} from './users.schema';
+import * as Joi from 'joi';
+import { ValidationError } from '../utils/errors/errorTypes';
+import { NextFunction, Request, Response } from 'express';
 export class UsersValidator {
-  private static validateRequest(schema: any) {
-    return (req: Request, res: Response, next: NextFunction) => {
-      const { error } = schema.validate(req);
-      if (error) {
-        res.status(400).send("Invalid request");
-        return;
-      }
-      next();
-    };
-  }
+  private static validateObject = (
+    objectToValidate: any,
+    joiSchema: Joi.ObjectSchema<any>
+  ) => {
+    const { error } = joiSchema.validate(objectToValidate);
+    if (error) {
+      throw new ValidationError(
+        error.details
+          .map((errorDetails) => errorDetails.message.replace(/"/gi, ''))
+          .join(', ')
+      );
+    }
+  };
 
-  static validateGetUsersByPage =
-    UsersValidator.validateRequest(getUsersByPageSchema);
-  static validateGetUserById =
-    UsersValidator.validateRequest(getUserByIdSchema);
-  static validateDeleteUser = UsersValidator.validateRequest(deleteUserSchema);
-  static validateCreateUser = UsersValidator.validateRequest(createUserSchema);
-  static validateUpdateUserById =
-    UsersValidator.validateRequest(updateUserSchema);
+  static validateGetUsersByPage = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    UsersValidator.validateObject(req.params, getUsersByPageSchema);
+    next();
+  };
+
+  static validateGetUserById = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    UsersValidator.validateObject(req.params, idParamSchema);
+    next();
+  };
+  static validateDeleteUser = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    UsersValidator.validateObject(req.params, idParamSchema);
+    next();
+  };
+  static validateCreateUser = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    UsersValidator.validateObject(req.body, createUserSchema);
+    next();
+  };
+  static validateUpdateUserById = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    UsersValidator.validateObject(req.params, idParamSchema);
+    UsersValidator.validateObject(req.body, updateUserSchema);
+    next();
+  };
 }

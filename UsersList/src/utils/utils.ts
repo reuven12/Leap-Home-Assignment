@@ -1,14 +1,15 @@
-import axios from "axios";
-import config from "../config";
-import { ServerError } from "../utils/errors/errorTypes";
-import { User } from "../interfaces/users.interface";
-import { FetchBy } from "../interfaces/users.interface";
-import { UserEntity } from "../db/users.entity";
+import axios from 'axios';
+import config from '../config';
+import { ServerError, NotFoundError } from '../utils/errors/errorTypes';
+import { User } from '../interfaces/users.interface';
+import { FetchBy } from '../interfaces/users.interface';
+import { UserEntity } from '../db/users.entity';
+
 export const corsOptions = {
   origin: [
-    "https://localhost",
-    "https://www.google.com",
-    "https://www.facebook.com",
+    'https://localhost:3000',
+    'https://www.google.com',
+    'https://www.facebook.com',
   ],
   optionsSuccessStatus: 200,
 };
@@ -19,12 +20,14 @@ export const fetchExternalUsers = async (
 ): Promise<User[] | User | undefined> => {
   try {
     if (fetchUsersBy === FetchBy.PAGE) {
-      return (await axios.get(`${config.externalUsersApi.url}?page=${id}`))
+      return (await axios.get(`${config.externalUsersApi.url}?page=${id}`)).data
         .data;
     } else if (fetchUsersBy === FetchBy.ID) {
       return (await axios.get(`${config.externalUsersApi.url}/${id}`)).data;
     }
   } catch (error: any) {
+    if (error.response.status === 404)
+      throw new NotFoundError('User not found');
     throw new ServerError();
   }
 };

@@ -1,15 +1,12 @@
-import { DataSource } from "typeorm";
-import config from "./config";
-import { Server } from "./server";
+import { Server } from './server';
+import { initDatabase } from './db/dataSource';
 
 (async () => {
-  const usersData = new DataSource(config.db);
   try {
+    await initDatabase();
     const server: Server = Server.bootstrap();
     server.listen();
-    await usersData.initialize();
-    console.log("Server started successfully!");
   } catch (error) {
-    console.log("ERROR while trying to start Server");
+    console.log('ERROR while trying to start Server');
   }
 })();

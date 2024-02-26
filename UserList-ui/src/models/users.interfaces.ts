@@ -7,7 +7,15 @@ export interface User {
   avatar: string;
 }
 
+export interface CreateUser extends Omit<User, 'id' | 'page'> {}
+
 export enum FetchBy {
   PAGE = 'page',
   ID = 'id',
+}
+
+export enum UserActionsType {
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
 }
