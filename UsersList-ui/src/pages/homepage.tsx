@@ -19,10 +19,10 @@ const Homepage: React.FC = () => {
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
 
   useEffect(() => {
-    const socket: Socket = io('http://localhost:8001');
-    socket.on('websiteCreated', userCreated);
-    socket.on('websiteUpdated', userUpdated);
-    socket.on('websiteDeleted', userDeleted);
+    const socket: Socket = io('http://localhost:2000');
+    socket.on('newUser', userCreated);
+    socket.on('updatedUser', userUpdated);
+    socket.on('deletedUser', userDeleted);
     return () => {
       if (socket) {
         socket.disconnect();

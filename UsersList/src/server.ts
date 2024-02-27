@@ -1,7 +1,7 @@
 import express from "express";
-import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import cors from "cors";
+import http from "http";
 import config from "./config";
 import UsersRouter from "./router";
 import { corsOptions } from "./utils/utils";
@@ -10,11 +10,13 @@ import { errorsHandler } from "./utils/errors/errorHandlers";
 export class Server {
   private static _instance: Server;
   private app: express.Application;
+  private httpServer: http.Server;
   private constructor() {
     this.app = express();
     this.initializeMiddlewares();
     this.initializeRoutes();
     this.initializeErrorHandling();
+    this.httpServer = http.createServer(this.app);
   }
 
   public static bootstrap(): Server {
@@ -25,9 +27,13 @@ export class Server {
   }
 
   public listen() {
-    this.app.listen(config.server.port, () => {
+    this.httpServer.listen(config.server.port, () => {
       console.log(`Server is running on port ${config.server.port}`);
     });
+  }
+
+  public getHttpServer() {
+    return this.httpServer;
   }
 
   private initializeMiddlewares() {

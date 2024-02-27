@@ -1,6 +1,7 @@
 import { Repository } from 'typeorm';
 import { AppDataSource } from '../db/dataSource';
 import { UserEntity } from '../db/users.entity';
+import { SocketServer } from '../socket.server';
 import { User, FetchBy } from '../interfaces/users.interface';
 import config from '../config';
 import { fetchExternalUsers, generateUser } from '../utils/utils';
@@ -13,9 +14,11 @@ import {
 export class UsersRepository {
   private userRepository: Repository<UserEntity>;
   private usersByExternalAPI: string;
-  constructor() {
+  private socketServer: SocketServer;
+  constructor(socketServer: SocketServer) {
     this.userRepository = AppDataSource.getRepository(UserEntity);
     this.usersByExternalAPI = config.externalUsersApi.url;
+    this.socketServer = socketServer;
   }
 
   async getUsersByPage(page: number): Promise<User[]> {
@@ -71,6 +74,7 @@ export class UsersRepository {
     try {
       const newUser = generateUser(createUserRequest);
       await this.userRepository.save(newUser);
+      this.socketServer.emitNewUser(newUser);
       return newUser;
     } catch (error: any) {
       if (error instanceof ApplicationError) throw error;
@@ -86,11 +90,12 @@ export class UsersRepository {
       if (!user) {
         throw new NotFoundError('User not found');
       }
-      await this.userRepository.update(updateUserRequest.id!, {
+      const userUpdated = await this.userRepository.update(updateUserRequest.id!, {
         ...user,
         ...updateUserRequest,
       });
-      return { ...user, ...updateUserRequest };
+      this.socketServer.emitUpdatedUser(userUpdated);
+      return userUpdated as unknown as User;
     } catch (error: any) {
       if (error instanceof ApplicationError) throw error;
       throw new ServerError(error.message);
@@ -102,6 +107,7 @@ export class UsersRepository {
       const user = await this.userRepository.findOneBy({ id });
       if (!user) throw new NotFoundError('User not found');
       await this.userRepository.remove(user);
+      this.socketServer.emitDeletedUser(id);
     } catch (error: any) {
       if (error instanceof ApplicationError) throw error;
       throw new ServerError(error.message);

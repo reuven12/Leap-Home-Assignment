@@ -1,12 +1,15 @@
-import { Server } from './server';
-import { initDatabase } from './db/dataSource';
+import { Server } from "./server";
+import { SocketServer } from "./socket.server";
+import { initDatabase } from "./db/dataSource";
 
 (async () => {
   try {
     await initDatabase();
     const server: Server = Server.bootstrap();
     server.listen();
+    const socketServer: SocketServer = SocketServer.bootstrap();
+    socketServer.listen(server.getHttpServer());
   } catch (error) {
-    console.log('ERROR while trying to start Server');
+    throw error;
   }
 })();

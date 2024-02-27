@@ -6,7 +6,7 @@ import { FetchBy } from '../interfaces/users.interface';
 import { UserEntity } from '../db/users.entity';
 import cors from 'cors';
 
-const allowedOrigins = [
+export const allowedOrigins = [
   "http://localhost:3000",
   "https://www.google.com",
   "https://www.facebook.com",
