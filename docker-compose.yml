@@ -11,7 +11,7 @@ services:
 
   node-app:
     image: node-app
-    build: ./UserList
+    build: ./UsersList
     ports:
       - '2000:2000'
       - '8001:8001'
@@ -20,11 +20,11 @@ services:
     env_file:
       - .env
 
-  # react-app:
-  #   image: react-app
-  #   build: ./LatencyTracker-ui
-  #   ports:
-  #     - '3000:3000'
+  react-app:
+    image: react-app
+    build: ./UsersList-ui
+    ports:
+      - '3000:3000'
 
 volumes:
   mysql_data:

@@ -1,0 +1,152 @@
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  background-color: rgb(227, 241, 241);
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  width: 94%;
+}
+
+.plus-icon-button {
+  width: 50%;
+  height: 50%;
+  margin: 20%;
+  color: rgb(34, 191, 188);
+  background-color: rgb(207, 211, 214);
+  border: none;
+}
+
+.card-dialog {
+  background-color: rgb(201, 221, 238);
+  width: 35%;
+  height: fit-content;
+}
+
+.header-input {
+  display: block;
+  margin-bottom: 2px;
+  text-align: left;
+  width: 77%;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.field-value,
+.p-inputnumber-input {
+  margin-bottom: 8%;
+  border-radius: 10px;
+  text-align: center;
+  height: 30px;
+}
+
+.p-button-cancel {
+  border-radius: "6px";
+  text-align: "center";
+  background-color: dodgerblue;
+  border: none;
+}
+
+.p-button-create,
+.p-button-update {
+  border-radius: "6px";
+  text-align: "center";
+  background-color: rgb(115, 192, 71);
+  border: none;
+}
+
+.p-button-delete {
+  width: 50px;
+  border-radius: "6px";
+  text-align: "center";
+  background-color: rgb(225, 67, 67);
+  border: none;
+}
+
+.p-dialog-footer {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 15px;
+  padding: 0;
+}
+
+.p-dialog{
+  width: 35%;
+  height: 70%;
+  background-color: rgb(201, 221, 238);
+}
+
+.p-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: auto;
+}
+
+.actions {
+  display: flex;
+  height: 50px;
+  margin: auto;
+  margin-bottom: 25px;
+}
+
+.p-datatable {
+  width: 95%;
+  height: 75%;
+  margin-top: 1%;
+  border: 1px solid #ddd;
+  background-color: #ddd;
+  border-radius: 12px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  overflow: auto;
+}
+.p-row-odd {
+  background-color: #f9f9f9;
+}
+
+.p-datatable thead th {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+
+
+.p-inputnumber-input {
+  background: #ffffff;
+  height: 65%;
+  width: 8%;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.p-dropdown {
+  background: #ffffff;
+  height: 65%;
+  width: 9%;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.p-button {
+  margin-right: 20px;
+  height: 65%;
+  width: 15%;
+}
+
+.p-paginator {
+  margin-top: 30px;
+}
+
