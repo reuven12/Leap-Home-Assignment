@@ -5,7 +5,7 @@ export default class HttpClient {
     try {
       return await axios.get(url);
     } catch (error: any) {
-      throw new Error(error);
+      return error;
     }
   }
 
@@ -13,7 +13,7 @@ export default class HttpClient {
     try {
       return await axios.put(url, body);
     } catch (error: any) {
-      throw new Error(error);
+      return error;
     }
   }
 
@@ -21,7 +21,7 @@ export default class HttpClient {
     try {
       return await axios.post(url, body);
     } catch (error: any) {
-      throw new Error(error);
+      return error;
     }
   }
 
@@ -29,7 +29,7 @@ export default class HttpClient {
     try {
       return await axios.delete(url);
     } catch (error: any) {
-      throw new Error(error);
+      return error;
     }
   }
 }

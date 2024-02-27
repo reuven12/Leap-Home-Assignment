@@ -4,14 +4,15 @@ import { ServerError, NotFoundError } from '../utils/errors/errorTypes';
 import { User } from '../interfaces/users.interface';
 import { FetchBy } from '../interfaces/users.interface';
 import { UserEntity } from '../db/users.entity';
+import cors from 'cors';
 
-export const corsOptions = {
-  origin: [
-    'https://localhost:3000',
-    'https://www.google.com',
-    'https://www.facebook.com',
-  ],
-  optionsSuccessStatus: 200,
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://www.google.com",
+  "https://www.facebook.com",
+];
+export const corsOptions: cors.CorsOptions = {
+  origin: allowedOrigins,
 };
 
 export const fetchExternalUsers = async (

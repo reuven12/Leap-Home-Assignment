@@ -7,53 +7,11 @@
   background-color: rgb(227, 241, 241);
 }
 
-.search-input {
-  width: 42.5%;
-  height: 5%;
-  margin: 20px;
-  border-radius: 8px;
-  padding: 10px;
-  font-size: 95%;
-  border: none;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-}
-
-.grid-items {
-  width: 85%;
-  height: 70%;
-  background-color: rgb(184, 206, 206);
-  border-radius: 15px;
-}
-
-.grid-container {
-  display: grid;
-  height: 90%;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  grid-gap: 3%;
-  padding: 2%;
-  grid-template-rows: min-content;
-  overflow-y: auto;
-}
-
-.grid-item {
-  position: relative;
-  background-color: #f0f0f0;
-  height: 140px;
-  width: 175px;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  text-align: center;
-}
-
-.status-indicator {
-  position: absolute;
-  bottom: 35px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  width: 94%;
 }
 
 .plus-icon-button {
@@ -94,24 +52,24 @@
 }
 
 .p-button-cancel {
-  border-radius: '6px';
-  text-align: 'center';
+  border-radius: "6px";
+  text-align: "center";
   background-color: dodgerblue;
   border: none;
 }
 
 .p-button-create,
 .p-button-update {
-  border-radius: '6px';
-  text-align: 'center';
+  border-radius: "6px";
+  text-align: "center";
   background-color: rgb(115, 192, 71);
   border: none;
 }
 
 .p-button-delete {
   width: 50px;
-  border-radius: '6px';
-  text-align: 'center';
+  border-radius: "6px";
+  text-align: "center";
   background-color: rgb(225, 67, 67);
   border: none;
 }
@@ -122,6 +80,12 @@
   align-items: center;
   margin-top: 15px;
   padding: 0;
+}
+
+.p-dialog{
+  width: 35%;
+  height: 70%;
+  background-color: rgb(201, 221, 238);
 }
 
 .p-field {
@@ -137,3 +101,52 @@
   margin: auto;
   margin-bottom: 25px;
 }
+
+.p-datatable {
+  width: 95%;
+  height: 75%;
+  margin-top: 1%;
+  border: 1px solid #ddd;
+  background-color: #ddd;
+  border-radius: 12px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  overflow: auto;
+}
+.p-row-odd {
+  background-color: #f9f9f9;
+}
+
+.p-datatable thead th {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+
+
+.p-inputnumber-input {
+  background: #ffffff;
+  height: 65%;
+  width: 8%;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.p-dropdown {
+  background: #ffffff;
+  height: 65%;
+  width: 9%;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.p-button {
+  margin-right: 20px;
+  height: 65%;
+  width: 15%;
+}
+
+.p-paginator {
+  margin-top: 30px;
+}
+

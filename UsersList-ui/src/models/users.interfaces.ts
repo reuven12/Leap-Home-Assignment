@@ -10,8 +10,8 @@ export interface User {
 export interface CreateUser extends Omit<User, 'id' | 'page'> {}
 
 export enum FetchBy {
-  PAGE = 'page',
-  ID = 'id',
+  PAGE = 'Page',
+  ID = 'User ID',
 }
 
 export enum UserActionsType {

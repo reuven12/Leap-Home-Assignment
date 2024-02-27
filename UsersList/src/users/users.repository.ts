@@ -20,7 +20,6 @@ export class UsersRepository {
 
   async getUsersByPage(page: number): Promise<User[]> {
     try {
-      let users: User[];
       const existingUsers: UserEntity[] = await this.userRepository.find({
         where: { page },
       });

@@ -1,11 +1,11 @@
-import express from 'express';
-import cookieParser from 'cookie-parser';
-import morgan from 'morgan';
-import cors from 'cors';
-import config from './config';
-import UsersRouter from './router';
-import { corsOptions } from './utils/utils';
-import { errorsHandler } from './utils/errors/errorHandlers';
+import express from "express";
+import cookieParser from "cookie-parser";
+import morgan from "morgan";
+import cors from "cors";
+import config from "./config";
+import UsersRouter from "./router";
+import { corsOptions } from "./utils/utils";
+import { errorsHandler } from "./utils/errors/errorHandlers";
 
 export class Server {
   private static _instance: Server;
@@ -33,15 +33,14 @@ export class Server {
   private initializeMiddlewares() {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
-    this.app.use(cookieParser());
-    this.app.use(morgan('dev'));
+    this.app.use(morgan("dev"));
     this.app.use(cors(corsOptions));
   }
 
   private initializeRoutes() {
-    this.app.use('/api/users', UsersRouter);
-    this.app.use('*', (_req, res) => {
-      res.status(404).send('Invalid Route');
+    this.app.use("/api/users", UsersRouter);
+    this.app.use("*", (_req, res) => {
+      res.status(404).send("Invalid Route");
     });
   }
 
