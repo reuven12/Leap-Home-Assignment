@@ -22,7 +22,7 @@ export class UsersService {
   static updateUser = async (
     id: number,
     updatedUser: Partial<User>
-  ): Promise<User> => {    
+  ): Promise<User> => {        
     return (
       await HttpClient.put(`${baseUrl}${users}/updateUser/${id}`, updatedUser)
     ).data as User;

@@ -90,12 +90,15 @@ export class UsersRepository {
       if (!user) {
         throw new NotFoundError('User not found');
       }
-      const userUpdated = await this.userRepository.update(updateUserRequest.id!, {
+      const userUpdated: User = {
         ...user,
         ...updateUserRequest,
+      };
+      await this.userRepository.update(updateUserRequest.id!, {
+        ...userUpdated,
       });
       this.socketServer.emitUpdatedUser(userUpdated);
-      return userUpdated as unknown as User;
+      return userUpdated as User;
     } catch (error: any) {
       if (error instanceof ApplicationError) throw error;
       throw new ServerError(error.message);

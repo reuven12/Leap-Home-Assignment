@@ -5,7 +5,7 @@ import {
   updateUserSchema,
 } from './users.schema';
 import * as Joi from 'joi';
-import { ValidationError } from '../utils/errors/errorTypes';
+import { ValidationError } from '../errors/errorTypes';
 import { NextFunction, Request, Response } from 'express';
 export class UsersValidator {
   private static validateObject = (
@@ -16,7 +16,7 @@ export class UsersValidator {
     if (error) {
       throw new ValidationError(
         error.details
-          .map((errorDetails) => errorDetails.message.replace(/"/gi, ''))
+          .map((errorDetails: any) => errorDetails.message.replace(/"/gi, ''))
           .join(', ')
       );
     }

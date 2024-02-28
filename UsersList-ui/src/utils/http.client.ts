@@ -1,5 +1,4 @@
 import axios from 'axios';
-
 export default class HttpClient {
   static async get(url: string) {
     try {
@@ -10,7 +9,7 @@ export default class HttpClient {
   }
 
   static async put(url: string, body: any) {
-    try {
+    try {      
       return await axios.put(url, body);
     } catch (error: any) {
       return error;
