@@ -34,7 +34,7 @@ const UserTable: React.FC<UserTableProps> = ({ users }) => {
         sortOrder={sortOrder}
         onSort={onSort}
         paginator
-        rows={6}
+        rows={9}
         first={first}
         onPage={(e: any) => setFirst(e.first)}
         onRowClick={(e: any) => onRowClick(e.data)}

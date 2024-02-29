@@ -59,7 +59,7 @@ const ActionsUser: React.FC<ActionsUserProps> = ({ user, onClose }) => {
         break;
       case UserActionsType.UPDATE:
         if (updateUser) {
-          if (updateUser.page) delete updateUser.page;
+          if ('page' in updateUser) delete updateUser.page;
           delete updateUser.id;
           handleUserUpdated(user?.id!, updateUser);
         }

@@ -1,13 +1,21 @@
 import { NextFunction, Request, Response } from 'express';
 import { UsersRepository } from './users.repository';
-import { SocketServer } from '../socket.server';
 import { User } from '../interfaces/users.interface';
 
 export class UsersController {
   private usersRepository: UsersRepository;
   constructor() {
-    this.usersRepository = new UsersRepository(SocketServer.bootstrap());
+    this.usersRepository = new UsersRepository();
   }
+
+  getUsers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const users = await this.usersRepository.getUsers();
+      res.status(200).send(users);
+    } catch (error) {
+      next(error);
+    }
+  };
 
   getUsersByPage = async (req: Request, res: Response, next: NextFunction) => {
     const page: number = parseInt(req.params.page);

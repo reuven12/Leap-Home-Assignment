@@ -4,6 +4,7 @@ import { UsersValidator } from './utils/validator/users.validator';
 const usersController = new UsersController();
 const UsersRouter = Router();
 
+UsersRouter.get('/getUsers', usersController.getUsers);
 UsersRouter.get(
   '/getUsers/:page',
   UsersValidator.validateGetUsersByPage,

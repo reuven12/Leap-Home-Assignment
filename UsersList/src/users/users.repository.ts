@@ -15,10 +15,30 @@ export class UsersRepository {
   private userRepository: Repository<UserEntity>;
   private usersByExternalAPI: string;
   private socketServer: SocketServer;
-  constructor(socketServer: SocketServer) {
+  constructor() {
     this.userRepository = AppDataSource.getRepository(UserEntity);
     this.usersByExternalAPI = config.externalUsersApi.url;
-    this.socketServer = socketServer;
+    this.socketServer = SocketServer.bootstrap();
+  }
+
+  async getUsers(): Promise<User[]> {
+    try {
+      const existingUsers: UserEntity[] = await this.userRepository.find();
+      if (existingUsers.length > 0) return existingUsers;
+      else {
+        const getExternalUsers = [
+          await fetchExternalUsers(1, FetchBy.PAGE),
+          await fetchExternalUsers(2, FetchBy.PAGE),
+        ] as User[];
+        if (getExternalUsers.length === 0)
+          throw new NotFoundError('Users not found');
+        await this.userRepository.save(getExternalUsers);
+        return getExternalUsers;
+      }
+    } catch (error: any) {
+      if (error instanceof ApplicationError) throw error;
+      throw new ServerError(error.message);
+    }
   }
 
   async getUsersByPage(page: number): Promise<User[]> {
@@ -28,13 +48,13 @@ export class UsersRepository {
       });
       if (existingUsers.length > 0) return existingUsers;
       else {
-        const getExternalUsers = (await fetchExternalUsers(
+        const getExternalUsersByPage = (await fetchExternalUsers(
           page,
           FetchBy.PAGE
         )) as User[];
-        if (getExternalUsers.length === 0)
+        if (getExternalUsersByPage.length === 0)
           throw new NotFoundError('Users not found');
-        const usersToSave: User[] = getExternalUsers.map((user) =>
+        const usersToSave: User[] = getExternalUsersByPage.map((user) =>
           generateUser(user)
         );
         usersToSave.forEach((user) => (user.page = page));

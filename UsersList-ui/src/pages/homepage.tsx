@@ -32,7 +32,7 @@ const Homepage: React.FC = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      setUsers(await UsersService.getUsersByPage(1));
+      setUsers(await UsersService.getAllUsers());
     };
     fetchUsers();
   }, []);
@@ -81,7 +81,7 @@ const Homepage: React.FC = () => {
         <Button
           label="Create New User"
           icon="pi pi-plus"
-          className='create-user-button'
+          className="create-user-button"
           onClick={() => setIsUserFormVisible(true)}
         />
         <div className="search-container">

@@ -4,16 +4,16 @@
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-color: rgb(236, 246, 246);
+  background-color: rgb(235, 244, 244);
 }
 
 .header-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 96%;
+  width: 94.5%;
   height: max-content;
-  margin-bottom: 1rem;
+  margin-bottom: 0.35rem;
 }
 
 .search-container {
@@ -26,7 +26,10 @@
 .p-inputnumber-input {
   background: #ffffff;
   width: 12rem;
-  border-radius: 6px !important;
+  border-radius: 0 10px 10px 0 !important;
+  border: none;
+  border-left: 0.5px solid rgb(191, 188, 188);
+
   text-align: center;
   margin-bottom: 0 !important;
   height: 100% !important;
@@ -35,7 +38,8 @@
 .p-dropdown {
   background: #ffffff;
   width: 9rem;
-  border-radius: 6px;
+  border-radius: 10px 0 0 10px !important;
+  border: none;
   text-align: center;
 }
 
@@ -90,7 +94,7 @@
 
 .create-user-button {
   color: white;
-  background-color: rgb(36, 171, 108);
+  background-color: rgb(10, 175, 98);
   border: none;
 }
 
@@ -125,12 +129,11 @@
 }
 
 .p-datatable {
-  margin-top: 0.2rem;
-  width: 97%;
+  width: 95%;
   height: 70%;
   border: 1px solid #ddd;
   background-color: #f8f6f6;
-  border-radius: 12px;
+  border-radius: 13px 13px 23px 23px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
   overflow: auto;
 }
@@ -146,4 +149,10 @@
 
 .p-paginator {
   margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background-color: #f4f4f4;
+  cursor:pointer;
 }
