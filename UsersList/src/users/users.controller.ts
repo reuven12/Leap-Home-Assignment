@@ -8,6 +8,15 @@ export class UsersController {
     this.usersRepository = new UsersRepository();
   }
 
+  getUsers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const users = await this.usersRepository.getUsers();
+      res.status(200).send(users);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getUsersByPage = async (req: Request, res: Response, next: NextFunction) => {
     const page: number = parseInt(req.params.page);
     try {
@@ -22,8 +31,6 @@ export class UsersController {
     try {
       const id: number = parseInt(req.params.id);
       const user = await this.usersRepository.getUserById(id);
-      console.log(user, 'controller');
-
       res.status(200).send(user);
     } catch (error) {
       next(error);

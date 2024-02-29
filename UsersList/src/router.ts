@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { UsersController } from './users/users.controller';
-import { UsersValidator } from './utils/users.validator';
+import { UsersValidator } from './utils/validator/users.validator';
 const usersController = new UsersController();
 const UsersRouter = Router();
 
+UsersRouter.get('/getUsers', usersController.getUsers);
 UsersRouter.get(
   '/getUsers/:page',
   UsersValidator.validateGetUsersByPage,

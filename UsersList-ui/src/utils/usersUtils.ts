@@ -9,11 +9,14 @@ export const handleUserDeleted = async (id: number) => {
   await UsersService.deleteUser(id);
 };
 
-export const handleUserUpdated = async (updatedUser: Partial<User>) => {
-  await UsersService.updateUser(updatedUser.id!, updatedUser);
+export const handleUserUpdated = async (
+  id: number,
+  updateUser: Partial<User>
+) => {
+  await UsersService.updateUser(id, updateUser);
 };
 
-export  const searchOptions = [
-  { label: FetchBy.PAGE, value: "Page" },
-  { label: FetchBy.ID, value: "User ID" },
+export const searchOptions = [
+  { label: FetchBy.PAGE, value: 'Page' },
+  { label: FetchBy.ID, value: 'User ID' },
 ];

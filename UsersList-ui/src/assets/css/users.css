@@ -4,14 +4,48 @@
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-color: rgb(227, 241, 241);
+  background-color: rgb(235, 244, 244);
 }
 
 .header-container {
   display: flex;
   align-items: center;
-  justify-content: start;
-  width: 94%;
+  justify-content: space-between;
+  width: 94.5%;
+  height: max-content;
+  margin-bottom: 0.35rem;
+}
+
+.search-container {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+.p-inputnumber-input {
+  background: #ffffff;
+  width: 12rem;
+  border-radius: 0 10px 10px 0 !important;
+  border: none;
+  border-left: 0.5px solid rgb(191, 188, 188);
+
+  text-align: center;
+  margin-bottom: 0 !important;
+  height: 100% !important;
+}
+
+.p-dropdown {
+  background: #ffffff;
+  width: 9rem;
+  border-radius: 10px 0 0 10px !important;
+  border: none;
+  text-align: center;
+}
+
+.p-button {
+  width: fit-content;
+  border-radius: 8px;
 }
 
 .plus-icon-button {
@@ -52,40 +86,32 @@
 }
 
 .p-button-cancel {
-  border-radius: "6px";
-  text-align: "center";
+  border-radius: '6px';
+  text-align: 'center';
   background-color: dodgerblue;
+  border: none;
+}
+
+.create-user-button {
+  color: white;
+  background-color: rgb(10, 175, 98);
   border: none;
 }
 
 .p-button-create,
 .p-button-update {
-  border-radius: "6px";
-  text-align: "center";
+  border-radius: '6px';
+  text-align: 'center';
   background-color: rgb(115, 192, 71);
   border: none;
 }
 
 .p-button-delete {
   width: 50px;
-  border-radius: "6px";
-  text-align: "center";
+  border-radius: '6px';
+  text-align: 'center';
   background-color: rgb(225, 67, 67);
   border: none;
-}
-
-.p-dialog-footer {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  margin-top: 15px;
-  padding: 0;
-}
-
-.p-dialog{
-  width: 35%;
-  height: 70%;
-  background-color: rgb(201, 221, 238);
 }
 
 .p-field {
@@ -104,11 +130,10 @@
 
 .p-datatable {
   width: 95%;
-  height: 75%;
-  margin-top: 1%;
+  height: 70%;
   border: 1px solid #ddd;
-  background-color: #ddd;
-  border-radius: 12px;
+  background-color: #f8f6f6;
+  border-radius: 13px 13px 23px 23px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
   overflow: auto;
 }
@@ -122,31 +147,12 @@
   cursor: pointer;
 }
 
-
-
-.p-inputnumber-input {
-  background: #ffffff;
-  height: 65%;
-  width: 8%;
-  border-radius: 6px;
-  text-align: center;
-}
-
-.p-dropdown {
-  background: #ffffff;
-  height: 65%;
-  width: 9%;
-  border-radius: 6px;
-  text-align: center;
-}
-
-.p-button {
-  margin-right: 20px;
-  height: 65%;
-  width: 15%;
-}
-
 .p-paginator {
   margin-top: 30px;
+  margin-bottom: 10px;
 }
 
+.p-datatable .p-datatable-tbody > tr:hover {
+  background-color: #f4f4f4;
+  cursor:pointer;
+}

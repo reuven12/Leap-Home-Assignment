@@ -9,9 +9,7 @@ interface UserTableProps {
   users: User[];
 }
 
-const UserTable: React.FC<UserTableProps> = ({ users }) => {
-  console.log(users);
-  
+const UserTable: React.FC<UserTableProps> = ({ users }) => {  
   const [sortField, setSortField] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<SortOrder>(1);
   const [first, setFirst] = useState<number>(0);
@@ -36,7 +34,7 @@ const UserTable: React.FC<UserTableProps> = ({ users }) => {
         sortOrder={sortOrder}
         onSort={onSort}
         paginator
-        rows={6}
+        rows={9}
         first={first}
         onPage={(e: any) => setFirst(e.first)}
         onRowClick={(e: any) => onRowClick(e.data)}
@@ -44,6 +42,7 @@ const UserTable: React.FC<UserTableProps> = ({ users }) => {
         <Column field="first_name" header="First Name" />
         <Column field="last_name" header="Last Name" />
         <Column field="email" header="Email" />
+        <Column field="avatar" header="Avatar" />
       </DataTable>
       {showUserActions && (
         <ActionsUser

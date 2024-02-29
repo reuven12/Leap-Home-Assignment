@@ -1,9 +1,13 @@
-import HttpClient from "../utils/http.client";
-import config from "../config";
-import { User } from "../models/users.interfaces";
+import HttpClient from '../utils/http.client';
+import config from '../config';
+import { User } from '../models/users.interfaces';
 const { users, baseUrl } = config.api;
 
 export class UsersService {
+  static getAllUsers = async (): Promise<User[]> => {
+    return (await HttpClient.get(`${baseUrl}${users}/getUsers`)).data as User[];
+  };
+
   static getUsersByPage = async (page: number): Promise<User[]> => {
     return (await HttpClient.get(`${baseUrl}${users}/getUsers/${page}`))
       .data as User[];
