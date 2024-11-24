@@ -40,4 +40,60 @@ export const generateUser = (user: User): UserEntity => {
   userEntity.email = user.email;
   userEntity.avatar = user.avatar;
   return userEntity;
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class User
+{
+    public string Id { get; set; } // מזהה ייחודי ליוזר
+    public string PovId { get; set; } // שדה סדר עדיפויות
+    // שדות נוספים
+}
+
+public class Program
+{
+    public static IEnumerable<User> FilterUsersByPriority(IEnumerable<User> users)
+    {
+        // סדר עדיפויות
+        var priorityOrder = new List<string> { "pop", "lol", "awe" };
+
+        // קיבוץ יוזרים לפי מזהה ייחודי (Id) ובחירה לפי סדר עדיפויות
+        var filteredUsers = users
+            .GroupBy(user => user.Id)
+            .Select(group =>
+                group.OrderBy(user => priorityOrder.IndexOf(user.PovId))
+                     .FirstOrDefault())
+            .Where(user => user != null);
+
+        return filteredUsers;
+    }
+
+    public static void Main()
+    {
+        // דוגמה לשימוש
+        var users = new List<User>
+        {
+            new User { Id = "1", PovId = "lol" },
+            new User { Id = "1", PovId = "pop" },
+            new User { Id = "1", PovId = "awe" },
+            new User { Id = "2", PovId = "awe" },
+            new User { Id = "2", PovId = "lol" },
+            new User { Id = "3", PovId = "pop" }
+        };
+
+        var filteredUsers = FilterUsersByPriority(users);
+
+        foreach (var user in filteredUsers)
+        {
+            Console.WriteLine($"Id: {user.Id}, PovId: {user.PovId}");
+        }
+    }
+}
+
+
+
+  
 };
