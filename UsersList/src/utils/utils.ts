@@ -42,44 +42,62 @@ export const generateUser = (user: User): UserEntity => {
   return userEntity;
 };
 
+// interfaces/IUserRepository.ts
+export interface IUserRepository {
+  createUser(data: any): Promise<any>;
+  getUserById(id: string): Promise<any>;
+  updateUser(id: string, data: any): Promise<any>;
+  deleteUser(id: string): Promise<void>;
+}
 
 
-import { createLogger, transports, format } from 'winston';
-import ElasticsearchTransport from 'winston-elasticsearch';
-import { Client } from '@elastic/elasticsearch';
+    // repositories/MongoUserRepository.ts
+import { IUserRepository } from "../interfaces/IUserRepository";
+import { UserModel } from "../models/UserModel";
 
-const esClient = new Client({
-  node: 'http://localhost:9200', // שנה לכתובת ה-Elasticsearch שלך
-  auth: {
-    username: 'your-username', // שם משתמש אם נדרש
-    password: 'your-password', // סיסמא אם נדרש
-  },
-});
+export class MongoUserRepository implements IUserRepository {
+  async createUser(data: any): Promise<any> {
+    const user = new UserModel(data);
+    return await user.save();
+  }
 
-const esTransportOptions = {
-  level: 'info', // רמת הלוגים שתשלח ל-Elasticsearch
-  client: esClient,
-  indexPrefix: 'app-logs', // פרפקס של האינדקס
-  transformer: (logData: any) => ({
-    '@timestamp': new Date().toISOString(),
-    severity: logData.level,
-    message: logData.message,
-    fields: { ...logData.meta },
-  }),
-};
+  async getUserById(id: string): Promise<any> {
+    return await UserModel.findById(id).exec();
+  }
 
-const logger = createLogger({
-  level: 'info',
-  format: format.combine(
-    format.timestamp(),
-    format.json()
-  ),
-  transports: [
-    new transports.Console(), // לוגים בקונסול
-    new ElasticsearchTransport(esTransportOptions), // לוגים ב-Elasticsearch
-  ],
-});
+  async updateUser(id: string, data: any): Promise<any> {
+    return await UserModel.findByIdAndUpdate(id, data, { new: true }).exec();
+  }
 
-export default logger;
+  async deleteUser(id: string): Promise<void> {
+    await UserModel.findByIdAndDelete(id).exec();
+  }
+}
 
-    
+// services/UserService.ts
+import { IUserRepository } from "../interfaces/IUserRepository";
+
+export class UserService {
+  constructor(private userRepository: IUserRepository) {}
+
+  async createUser(data: any): Promise<any> {
+    return await this.userRepository.createUser(data);
+  }
+
+  async getUserById(id: string): Promise<any> {
+    return await this.userRepository.getUserById(id);
+  }
+
+  async updateUser(id: string, data: any): Promise<any> {
+    return await this.userRepository.updateUser(id, data);
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await this.userRepository.deleteUser(id);
+  }
+}
+
+//הזרקת תלויות ב server
+const userRepository = new MongoUserRepository(); // ניתן להחליף ל-SQLUserRepository
+const userService = new UserService(userRepository);
+const userController = new UserController(userService);
