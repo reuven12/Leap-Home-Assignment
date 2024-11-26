@@ -42,59 +42,86 @@ export const generateUser = (user: User): UserEntity => {
   return userEntity;
 };
 
-function normalizeUser(user: any): any {
-  const normalizedUser = { ...user };
 
-  for (const key in normalizedUser) {
-    if (normalizedUser[key] instanceof Date) {
-      normalizedUser[key] = normalizedUser[key].toISOString(); // המרת תאריכים ל-ISO
-    }
-  }
-
-  return normalizedUser;
-}
-
-// נרמול המשתמש הקיים
-const normalizedExistingUser = normalizeUser(existingUser);
-
-for (const key in data) {
-  if (Object.hasOwn(data, key) && !_.isEqual(data[key], normalizedExistingUser[key])) {
-    updatedFields[key] = data[key];
-  }
+export interface IRepository {
+  startTransaction(): Promise<any>; // התחלת טרנזקציה
+  commitTransaction(session: any): Promise<void>; // שמירת טרנזקציה
+  abortTransaction(session: any): Promise<void>; // ביטול טרנזקציה
+  endSession(session: any): Promise<void>; // סיום session
+  // פונקציות קיימות כמו findByUniqueKey, updateByUniqueKey וכו'.
 }
 
 
-function compareDates(clientObj: any, mongoObj: any): boolean {
-  // עבור על כל השדות של האובייקט של הלקוח
-  for (let key in clientObj) {
-    if (clientObj.hasOwnProperty(key)) {
-      const clientValue = clientObj[key];
-      const mongoValue = mongoObj[key];
+import mongoose from "mongoose";
 
-      // אם הערך הוא מחרוזת שנראית כתאריך
-      if (typeof clientValue === 'string' && !isNaN(Date.parse(clientValue))) {
-        const clientDate = new Date(clientValue);
-        const mongoDate = new Date(mongoValue);
+export class MongoRepository implements IRepository {
+  async startTransaction(): Promise<mongoose.ClientSession> {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    return session;
+  }
 
-        // אם התאריכים שונים
-        if (clientDate.toISOString() !== mongoDate.toISOString()) {
-          console.log(`The date field "${key}" is different.`);
-          return false; // אם התאריכים שונים, נחזיר false
-        }
+  async commitTransaction(session: mongoose.ClientSession): Promise<void> {
+    await session.commitTransaction();
+  }
+
+  async abortTransaction(session: mongoose.ClientSession): Promise<void> {
+    await session.abortTransaction();
+  }
+
+  async endSession(session: mongoose.ClientSession): Promise<void> {
+    session.endSession();
+  }
+
+  async findByUniqueKey(uniqueKey: string, session?: mongoose.ClientSession): Promise<any> {
+    return await UserModel.findOne({ uniqueKey }).session(session || null).lean().exec();
+  }
+
+  async updateByUniqueKey(uniqueKey: string, updatedFields: any, session?: mongoose.ClientSession): Promise<any> {
+    return await UserModel.updateOne({ uniqueKey }, { $set: updatedFields }).session(session || null).exec();
+  }
+
+  async createUser(data: any, session?: mongoose.ClientSession): Promise<any> {
+    const user = new UserModel(data);
+    return await user.save({ session });
+  }
+}
+
+
+
+async createOrUpdateUsers(users: any[]): Promise<any> {
+  const session = await this.repository.startTransaction();
+  try {
+    // יצירת רשימת הבטחות עם מידע על כל יוזר
+    const promises = users.map(async (user) => {
+      try {
+        return await this.createOrUpdateUser(user, session);
+      } catch (error) {
+        // הוספת פרטי היוזר לשגיאה
+        error.user = user;
+        throw error;
       }
+    });
+
+    // הרצת כל ההבטחות במקביל
+    const results = await Promise.all(promises);
+
+    // שמירת הטרנזקציה אם הכל הצליח
+    await session.commitTransaction();
+    return results;
+  } catch (error) {
+    // ביטול הטרנזקציה במקרה של שגיאה
+    await session.abortTransaction();
+    if (error.user) {
+      throw new Error(
+        `Transaction failed for user: ${JSON.stringify(error.user)} - ${error.message}`
+      );
     }
+    throw error;
+  } finally {
+    // סגירת ה-session
+    await session.endSession();
   }
-
-  // אם לא מצאנו הבדל
-  return true;
 }
 
 
-function hasDateChanged(clientDate: any, mongoDate: any): boolean {
-  // אם התאריך מהמונגו הוא כבר Date, אז אין צורך להמיר אותו
-  const clientDateObj = new Date(clientDate);
-  const mongoDateObj = new Date(mongoDate);
-
-  // השוואת התאריכים כ-ISO string (כל תאריך בפורמט אחיד)
-  return clientDateObj.toISOString() !== mongoDateObj.toISOString();
-}
