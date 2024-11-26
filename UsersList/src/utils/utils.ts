@@ -42,62 +42,57 @@ export const generateUser = (user: User): UserEntity => {
   return userEntity;
 };
 
-// interfaces/IUserRepository.ts
-export interface IUserRepository {
-  createUser(data: any): Promise<any>;
-  getUserById(id: string): Promise<any>;
-  updateUser(id: string, data: any): Promise<any>;
-  deleteUser(id: string): Promise<void>;
-}
-
-
-    // repositories/MongoUserRepository.ts
-import { IUserRepository } from "../interfaces/IUserRepository";
 import { UserModel } from "../models/UserModel";
 
-export class MongoUserRepository implements IUserRepository {
+export class MongoUserRepository {
+  async findByUniqueKey(uniqueKey: string): Promise<any | null> {
+    return await UserModel.findOne({ uniqueKey }).lean().exec(); // שימוש ב-lean()
+  }
+
+  async updateByUniqueKey(uniqueKey: string, updatedFields: any): Promise<any> {
+    return await UserModel.updateOne({ uniqueKey }, { $set: updatedFields }).exec();
+  }
+
   async createUser(data: any): Promise<any> {
     const user = new UserModel(data);
     return await user.save();
   }
-
-  async getUserById(id: string): Promise<any> {
-    return await UserModel.findById(id).exec();
-  }
-
-  async updateUser(id: string, data: any): Promise<any> {
-    return await UserModel.findByIdAndUpdate(id, data, { new: true }).exec();
-  }
-
-  async deleteUser(id: string): Promise<void> {
-    await UserModel.findByIdAndDelete(id).exec();
-  }
 }
 
-// services/UserService.ts
-import { IUserRepository } from "../interfaces/IUserRepository";
+import { IUserRepository } from "../repositories/IUserRepository";
 
 export class UserService {
   constructor(private userRepository: IUserRepository) {}
 
-  async createUser(data: any): Promise<any> {
-    return await this.userRepository.createUser(data);
-  }
+  async createOrUpdateUser(data: any): Promise<any> {
+    const { uniqueKey } = data;
 
-  async getUserById(id: string): Promise<any> {
-    return await this.userRepository.getUserById(id);
-  }
+    // חיפוש משתמש קיים
+    const existingUser = await this.userRepository.findByUniqueKey(uniqueKey);
 
-  async updateUser(id: string, data: any): Promise<any> {
-    return await this.userRepository.updateUser(id, data);
-  }
+    if (existingUser) {
+      // המשתמש קיים - בדיקת השדות שהשתנו
+      const updatedFields: Record<string, any> = {};
+      for (const key in data) {
+        if (data[key] !== existingUser[key]) {
+          updatedFields[key] = data[key];
+        }
+      }
 
-  async deleteUser(id: string): Promise<void> {
-    await this.userRepository.deleteUser(id);
+      // אם יש שדות לעדכון, מבצעים עדכון
+      if (Object.keys(updatedFields).length > 0) {
+        await this.userRepository.updateByUniqueKey(uniqueKey, updatedFields);
+      }
+
+      // מחזירים את האובייקט המשולב
+      return { ...existingUser, ...updatedFields };
+    } else {
+      // המשתמש לא קיים - יצירה
+      return await this.userRepository.createUser(data);
+    }
   }
 }
 
-//הזרקת תלויות ב server
-const userRepository = new MongoUserRepository(); // ניתן להחליף ל-SQLUserRepository
-const userService = new UserService(userRepository);
-const userController = new UserController(userService);
+
+
+
