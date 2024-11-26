@@ -62,3 +62,39 @@ for (const key in data) {
     updatedFields[key] = data[key];
   }
 }
+
+
+function compareDates(clientObj: any, mongoObj: any): boolean {
+  // עבור על כל השדות של האובייקט של הלקוח
+  for (let key in clientObj) {
+    if (clientObj.hasOwnProperty(key)) {
+      const clientValue = clientObj[key];
+      const mongoValue = mongoObj[key];
+
+      // אם הערך הוא מחרוזת שנראית כתאריך
+      if (typeof clientValue === 'string' && !isNaN(Date.parse(clientValue))) {
+        const clientDate = new Date(clientValue);
+        const mongoDate = new Date(mongoValue);
+
+        // אם התאריכים שונים
+        if (clientDate.toISOString() !== mongoDate.toISOString()) {
+          console.log(`The date field "${key}" is different.`);
+          return false; // אם התאריכים שונים, נחזיר false
+        }
+      }
+    }
+  }
+
+  // אם לא מצאנו הבדל
+  return true;
+}
+
+
+function hasDateChanged(clientDate: any, mongoDate: any): boolean {
+  // אם התאריך מהמונגו הוא כבר Date, אז אין צורך להמיר אותו
+  const clientDateObj = new Date(clientDate);
+  const mongoDateObj = new Date(mongoDate);
+
+  // השוואת התאריכים כ-ISO string (כל תאריך בפורמט אחיד)
+  return clientDateObj.toISOString() !== mongoDateObj.toISOString();
+}
