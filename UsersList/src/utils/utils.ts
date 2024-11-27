@@ -43,85 +43,65 @@ export const generateUser = (user: User): UserEntity => {
 };
 
 
-export interface IRepository {
-  startTransaction(): Promise<any>; // התחלת טרנזקציה
-  commitTransaction(session: any): Promise<void>; // שמירת טרנזקציה
-  abortTransaction(session: any): Promise<void>; // ביטול טרנזקציה
-  endSession(session: any): Promise<void>; // סיום session
-  // פונקציות קיימות כמו findByUniqueKey, updateByUniqueKey וכו'.
-}
 
-
-import mongoose from "mongoose";
-
-export class MongoRepository implements IRepository {
-  async startTransaction(): Promise<mongoose.ClientSession> {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    return session;
-  }
-
-  async commitTransaction(session: mongoose.ClientSession): Promise<void> {
-    await session.commitTransaction();
-  }
-
-  async abortTransaction(session: mongoose.ClientSession): Promise<void> {
-    await session.abortTransaction();
-  }
-
-  async endSession(session: mongoose.ClientSession): Promise<void> {
-    session.endSession();
-  }
-
-  async findByUniqueKey(uniqueKey: string, session?: mongoose.ClientSession): Promise<any> {
-    return await UserModel.findOne({ uniqueKey }).session(session || null).lean().exec();
-  }
-
-  async updateByUniqueKey(uniqueKey: string, updatedFields: any, session?: mongoose.ClientSession): Promise<any> {
-    return await UserModel.updateOne({ uniqueKey }, { $set: updatedFields }).session(session || null).exec();
-  }
-
-  async createUser(data: any, session?: mongoose.ClientSession): Promise<any> {
-    const user = new UserModel(data);
-    return await user.save({ session });
-  }
-}
-
-
-
-async createOrUpdateUsers(users: any[]): Promise<any> {
+async createOrUpdateUsers(users: any[], batchSize: number = 50): Promise<any> {
   const session = await this.repository.startTransaction();
+
   try {
-    // יצירת רשימת הבטחות עם מידע על כל יוזר
-    const promises = users.map(async (user) => {
-      try {
-        return await this.createOrUpdateUser(user, session);
-      } catch (error) {
-        // הוספת פרטי היוזר לשגיאה
-        error.user = user;
-        throw error;
-      }
-    });
+    for (let i = 0; i < users.length; i += batchSize) {
+      const batch = users.slice(i, i + batchSize);
 
-    // הרצת כל ההבטחות במקביל
-    const results = await Promise.all(promises);
+      const promises = batch.map(async (user) => {
+        try {
+          return await this.createOrUpdateUser(user, session);
+        } catch (error) {
+          // יצירת שגיאה מותאמת אישית לפי סוג השגיאה
+          let customError;
+          if (error.code === 11000) { // Duplicate key error
+            customError = new DuplicateError(
+              "Duplicate key error",
+              409,
+              "DUPLICATE_KEY",
+              { user, error }
+            );
+          } else if (error.validationError) { // Validation error
+            customError = new ValidationError(
+              "Validation error occurred",
+              400,
+              "VALIDATION_ERROR",
+              { user, errorDetails: error.errors }
+            );
+          } else {
+            customError = new Error(
+              `Failed to process user ${JSON.stringify(user)}: ${error.message}`
+            );
+          }
 
-    // שמירת הטרנזקציה אם הכל הצליח
+          customError.user = user; // לשמירת פרטי היוזר
+          throw customError; // זריקת שגיאה מותאמת אישית
+        }
+      });
+
+      await Promise.all(promises);
+    }
+
     await session.commitTransaction();
-    return results;
   } catch (error) {
-    // ביטול הטרנזקציה במקרה של שגיאה
     await session.abortTransaction();
+
     if (error.user) {
       throw new Error(
         `Transaction failed for user: ${JSON.stringify(error.user)} - ${error.message}`
       );
     }
-    throw error;
+
+    throw error; // זריקת שגיאה כללית אם אין מידע על יוזר
   } finally {
-    // סגירת ה-session
     await session.endSession();
   }
 }
+
+
+
 
 
