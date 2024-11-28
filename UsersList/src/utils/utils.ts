@@ -43,65 +43,82 @@ export const generateUser = (user: User): UserEntity => {
 };
 
 
-
-async createOrUpdateUsers(users: any[], batchSize: number = 50): Promise<any> {
-  const session = await this.repository.startTransaction();
-
+async createUsers(users: any[], batchSize: number = 50): Promise<void> {
+  const session = await mongoose.startSession();
   try {
+    // שלב 1: ולידציה מוקדמת
+    console.log('Starting validation...');
+    for (const user of users) {
+      await this.validateUser(user);
+    }
+    console.log('Validation successful.');
+
+    // שלב 2: שמירה בטרנזקציות
+    session.startTransaction();
+    console.log('Starting to save users in batches...');
+
     for (let i = 0; i < users.length; i += batchSize) {
-      const batch = users.slice(i, i + batchSize);
+      const batch = users.slice(i, i + batchSize); // יצירת ה-Batch הנוכחי
 
-      const promises = batch.map(async (user) => {
-        try {
-          return await this.createOrUpdateUser(user, session);
-        } catch (error) {
-          // יצירת שגיאה מותאמת אישית לפי סוג השגיאה
-          let customError;
-          if (error.code === 11000) { // Duplicate key error
-            customError = new DuplicateError(
-              "Duplicate key error",
-              409,
-              "DUPLICATE_KEY",
-              { user, error }
-            );
-          } else if (error.validationError) { // Validation error
-            customError = new ValidationError(
-              "Validation error occurred",
-              400,
-              "VALIDATION_ERROR",
-              { user, errorDetails: error.errors }
-            );
-          } else {
-            customError = new Error(
-              `Failed to process user ${JSON.stringify(user)}: ${error.message}`
-            );
-          }
+      // שמירת ה-Batch בטרנזקציה
+      await this.userRepository.bulkWrite(
+        batch.map((user) => ({
+          insertOne: { document: user }, // יצירת המסמך
+        })),
+        { session }
+      );
 
-          customError.user = user; // לשמירת פרטי היוזר
-          throw customError; // זריקת שגיאה מותאמת אישית
-        }
-      });
-
-      await Promise.all(promises);
+      console.log(`Batch ${i / batchSize + 1} saved successfully.`);
     }
 
     await session.commitTransaction();
+    console.log('All users saved successfully.');
   } catch (error) {
-    await session.abortTransaction();
-
-    if (error.user) {
-      throw new Error(
-        `Transaction failed for user: ${JSON.stringify(error.user)} - ${error.message}`
-      );
+    console.error('An error occurred, aborting transaction...', error);
+    if (session.inTransaction()) {
+      await session.abortTransaction();
     }
-
-    throw error; // זריקת שגיאה כללית אם אין מידע על יוזר
+    throw error; // זריקת השגיאה החוצה
   } finally {
-    await session.endSession();
+    session.endSession();
+    console.log('Session ended.');
   }
+}
+
+// פונקציה לבדיקה מקדימה של משתמש
+async validateUser(user: any): Promise<void> {
+  // בדיקת קיום משתמש עם אותו ID
+  const existingUser = await this.userRepository.findOne({ id: user.id });
+  if (existingUser) {
+    throw new Error(`Duplicate user found with ID: ${user.id}`);
+  }
+
+  // בדיקת שדות חובה (לדוגמה)
+  if (!user.name || !user.email) {
+    throw new Error(`Validation failed for user: ${JSON.stringify(user)}`);
+  }
+
+  // ניתן להוסיף בדיקות נוספות לפי הצורך
 }
 
 
 
+//in repository
+
+async createOrUpdateUsers(users: any[], session: any): Promise<void> {
+  const operations = users.map((user) => ({
+    updateOne: {
+      filter: { id: user.id }, // קריטריון למציאת המסמך
+      update: { $set: user },  // עדכון המסמך
+      upsert: true,            // צור מסמך אם לא נמצא
+    },
+  }));
+
+  try {
+    await this.userRepository.bulkWrite(operations, { session });
+  } catch (error) {
+    throw new Error(`Failed to execute bulkWrite: ${error.message}`);
+  }
+}
 
 
