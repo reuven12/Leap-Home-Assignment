@@ -42,83 +42,74 @@ export const generateUser = (user: User): UserEntity => {
   return userEntity;
 };
 
+//scripts/helper
 
-async createUsers(users: any[], batchSize: number = 50): Promise<void> {
-  const session = await mongoose.startSession();
+import mongoose from 'mongoose';
+
+export async function syncCollection(
+  prodDb: mongoose.Connection,
+  devDb: mongoose.Connection,
+  collectionName: string,
+  schema: mongoose.Schema
+) {
+  const ProdModel = prodDb.model(collectionName, schema);
+  const DevModel = devDb.model(collectionName, schema);
+
+  console.log(`Starting sync for collection: ${collectionName}...`);
+
+  const latestDevRecord = await DevModel.findOne()
+    .sort({ createdAt: -1 })
+    .exec();
+
+  const lastSyncDate = latestDevRecord ? latestDevRecord.createdAt : new Date(0);
+
+  console.log(`Last sync date for ${collectionName}: ${lastSyncDate}`);
+
+  const newRecords = await ProdModel.find({
+    createdAt: { $gt: lastSyncDate },
+  }).exec();
+
+  if (newRecords.length > 0) {
+    await DevModel.insertMany(newRecords);
+    console.log(`Synced ${newRecords.length} records to ${collectionName}.`);
+  } else {
+    console.log(`No new records to sync for ${collectionName}.`);
+  }
+}
+
+
+
+//syncData 
+import mongoose from 'mongoose';
+import { Anticipation } from '../models/anticipation.model';
+import { syncCollection } from './helpers/syncCollection';
+
+const prodDb = mongoose.createConnection(process.env.PROD_DB_URI!, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const devDb = mongoose.createConnection(process.env.DEV_DB_URI!, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+async function syncDatabases() {
   try {
-    // שלב 1: ולידציה מוקדמת
-    console.log('Starting validation...');
-    for (const user of users) {
-      await this.validateUser(user);
-    }
-    console.log('Validation successful.');
-
-    // שלב 2: שמירה בטרנזקציות
-    session.startTransaction();
-    console.log('Starting to save users in batches...');
-
-    for (let i = 0; i < users.length; i += batchSize) {
-      const batch = users.slice(i, i + batchSize); // יצירת ה-Batch הנוכחי
-
-      // שמירת ה-Batch בטרנזקציה
-      await this.userRepository.bulkWrite(
-        batch.map((user) => ({
-          insertOne: { document: user }, // יצירת המסמך
-        })),
-        { session }
-      );
-
-      console.log(`Batch ${i / batchSize + 1} saved successfully.`);
-    }
-
-    await session.commitTransaction();
-    console.log('All users saved successfully.');
+    await syncCollection(prodDb, devDb, 'Anticipation', Anticipation.schema);
+    await syncCollection(prodDb, devDb, 'NegativeAnticipation', Anticipation.schema);
   } catch (error) {
-    console.error('An error occurred, aborting transaction...', error);
-    if (session.inTransaction()) {
-      await session.abortTransaction();
-    }
-    throw error; // זריקת השגיאה החוצה
+    console.error('Error syncing databases:', error);
   } finally {
-    session.endSession();
-    console.log('Session ended.');
+    await prodDb.close();
+    await devDb.close();
+    console.log('Database connections closed.');
   }
 }
 
-// פונקציה לבדיקה מקדימה של משתמש
-async validateUser(user: any): Promise<void> {
-  // בדיקת קיום משתמש עם אותו ID
-  const existingUser = await this.userRepository.findOne({ id: user.id });
-  if (existingUser) {
-    throw new Error(`Duplicate user found with ID: ${user.id}`);
-  }
-
-  // בדיקת שדות חובה (לדוגמה)
-  if (!user.name || !user.email) {
-    throw new Error(`Validation failed for user: ${JSON.stringify(user)}`);
-  }
-
-  // ניתן להוסיף בדיקות נוספות לפי הצורך
+if (require.main === module) {
+  syncDatabases().catch(console.error);
 }
 
-
-
-//in repository
-
-async createOrUpdateUsers(users: any[], session: any): Promise<void> {
-  const operations = users.map((user) => ({
-    updateOne: {
-      filter: { id: user.id }, // קריטריון למציאת המסמך
-      update: { $set: user },  // עדכון המסמך
-      upsert: true,            // צור מסמך אם לא נמצא
-    },
-  }));
-
-  try {
-    await this.userRepository.bulkWrite(operations, { session });
-  } catch (error) {
-    throw new Error(`Failed to execute bulkWrite: ${error.message}`);
-  }
-}
 
 
