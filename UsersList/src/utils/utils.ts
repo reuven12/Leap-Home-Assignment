@@ -42,74 +42,8 @@ export const generateUser = (user: User): UserEntity => {
   return userEntity;
 };
 
-//scripts/helper
-
-import mongoose from 'mongoose';
-
-export async function syncCollection(
-  prodDb: mongoose.Connection,
-  devDb: mongoose.Connection,
-  collectionName: string,
-  schema: mongoose.Schema
-) {
-  const ProdModel = prodDb.model(collectionName, schema);
-  const DevModel = devDb.model(collectionName, schema);
-
-  console.log(`Starting sync for collection: ${collectionName}...`);
-
-  const latestDevRecord = await DevModel.findOne()
-    .sort({ createdAt: -1 })
-    .exec();
-
-  const lastSyncDate = latestDevRecord ? latestDevRecord.createdAt : new Date(0);
-
-  console.log(`Last sync date for ${collectionName}: ${lastSyncDate}`);
-
-  const newRecords = await ProdModel.find({
-    createdAt: { $gt: lastSyncDate },
-  }).exec();
-
-  if (newRecords.length > 0) {
-    await DevModel.insertMany(newRecords);
-    console.log(`Synced ${newRecords.length} records to ${collectionName}.`);
-  } else {
-    console.log(`No new records to sync for ${collectionName}.`);
-  }
-}
+RUN chmod -R g+rw /app
+USER 1001
 
 
-
-//syncData 
-import mongoose from 'mongoose';
-import { Anticipation } from '../models/anticipation.model';
-import { syncCollection } from './helpers/syncCollection';
-
-const prodDb = mongoose.createConnection(process.env.PROD_DB_URI!, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-const devDb = mongoose.createConnection(process.env.DEV_DB_URI!, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-async function syncDatabases() {
-  try {
-    await syncCollection(prodDb, devDb, 'Anticipation', Anticipation.schema);
-    await syncCollection(prodDb, devDb, 'NegativeAnticipation', Anticipation.schema);
-  } catch (error) {
-    console.error('Error syncing databases:', error);
-  } finally {
-    await prodDb.close();
-    await devDb.close();
-    console.log('Database connections closed.');
-  }
-}
-
-if (require.main === module) {
-  syncDatabases().catch(console.error);
-}
-
-
-
+  
