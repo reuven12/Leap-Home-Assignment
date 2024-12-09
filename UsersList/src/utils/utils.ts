@@ -46,4 +46,37 @@ RUN chmod -R g+rw /app
 USER 1001
 
 
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source files
+COPY . .
+
+# Fix permissions
+RUN chmod -R 755 /app
+RUN chown -R node:node /app
+
+# Switch to a less privileged user
+USER node
+
+# Expose the port and start the app
+EXPOSE 3000
+CMD ["npm", "start"]
+
+
+
+volumes:
+  - name: app-storage
+    persistentVolumeClaim:
+      claimName: my-pvc
+  securityContext:
+    fsGroup: 1001
+
+
   
