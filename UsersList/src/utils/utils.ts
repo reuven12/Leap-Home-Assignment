@@ -42,41 +42,38 @@ export const generateUser = (user: User): UserEntity => {
   return userEntity;
 };
 
-RUN chmod -R g+rw /app
-USER 1001
 
+class Item {
+  constructor(public id: number, public name: string) {}
+}
 
-FROM node:18-alpine
+// מערך הפריטים הראשי
+const items: Item[] = [
+  new Item(1, "Item 1"),
+  new Item(2, "Item 2"),
+  new Item(3, "Item 3"),
+  new Item(4, "Item 4"),
+];
 
-# Set working directory
-WORKDIR /app
+// מערך ה-IDs שמקושרים
+const linkedIds: number[] = [2, 4];
 
-# Copy package.json and install dependencies
-COPY package*.json ./
-RUN npm install
+// טיפוס מורחב שמוסיף isLinked לפריטים
+type ExtendedItem = Item & { isLinked: boolean };
 
-# Copy source files
-COPY . .
+// פעולת מיון והרחבה
+const sortedExtendedItems: ExtendedItem[] = items
+  .map((item) => ({
+    ...item,
+    isLinked: linkedIds.includes(item.id), // הרחבת ה-Type עם isLinked
+  }))
+  .sort((a, b) => {
+    if (a.isLinked && !b.isLinked) return -1; // מקושרים קודם
+    if (!a.isLinked && b.isLinked) return 1;  // לא מקושרים אחר כך
+    return 0; // שמירה על הסדר הקיים
+  });
 
-# Fix permissions
-RUN chmod -R 755 /app
-RUN chown -R node:node /app
-
-# Switch to a less privileged user
-USER node
-
-# Expose the port and start the app
-EXPOSE 3000
-CMD ["npm", "start"]
-
-
-
-volumes:
-  - name: app-storage
-    persistentVolumeClaim:
-      claimName: my-pvc
-  securityContext:
-    fsGroup: 1001
+console.log(sortedExtendedItems);
 
 
   
