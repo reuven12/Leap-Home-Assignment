@@ -43,35 +43,32 @@ export const generateUser = (user: User): UserEntity => {
 };
 
 
-class Item {
-  constructor(public id: number, public name: string) {}
-}
+import Joi from 'joi';
 
-// מערך הפריטים הראשי
-const items: Item[] = [
-  new Item(1, "Item 1"),
-  new Item(2, "Item 2"),
-  new Item(3, "Item 3"),
-  new Item(4, "Item 4"),
-];
+const userSchema = Joi.object({
+  id: Joi.string().required(),
+  name: Joi.string().required(),
+});
 
-// מערך ה-IDs שמקושרים
-const linkedIds: number[] = [2, 4];
+const createUserSchema = Joi.alternatives().try(
+  Joi.array().items(userSchema), // אם זו רשימה של משתמשים
+  userSchema // אם זה משתמש יחיד
+).custom((value) => {
+  // אם הערך הוא אובייקט יחיד, עוטפים אותו במערך
+  return Array.isArray(value) ? value : [value];
+}, 'Wrap single user in an array');
 
-// טיפוס מורחב שמוסיף isLinked לפריטים
-type ExtendedItem = Item & { isLinked: boolean };
+export const validateCreateUsers = (req, res, next) => {
+  const { error, value } = createUserSchema.validate(req.body);
 
-// פעולת מיון והרחבה
-const sortedExtendedItems: ExtendedItem[] = items
-  .map((item) => ({
-    ...item,
-    isLinked: linkedIds.includes(item.id), // הרחבת ה-Type עם isLinked
-  }))
-  .sort((a, b) => {
-    if (a.isLinked && !b.isLinked) return -1; // מקושרים קודם
-    if (!a.isLinked && b.isLinked) return 1;  // לא מקושרים אחר כך
-    return 0; // שמירה על הסדר הקיים
-  });
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  req.body = value; // מעדכנים את ה-body לאחר הלידציה
+  next();
+};
+
 
 console.log(sortedExtendedItems);
 
