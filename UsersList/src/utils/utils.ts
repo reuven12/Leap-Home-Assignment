@@ -73,4 +73,62 @@ export const validateCreateUsers = (req, res, next) => {
 console.log(sortedExtendedItems);
 
 
-  
+
+
+interface Component {
+  id: string;
+  name: string;
+  isLinkedToPerson?: boolean; // שדה לסימון אם הרכיב מקושר
+}
+
+interface Asset {
+  id: string;
+  components: Component[];
+  hasLinkedComponent?: boolean; // שדה לסימון אם יש רכיבים תואמים
+}
+
+// מערך הנכסים
+const assets: Asset[] = [
+  { id: 'asset1', components: [{ id: 'comp1', name: 'Component 1' }, { id: 'comp2', name: 'Component 2' }] },
+  { id: 'asset2', components: [{ id: 'comp3', name: 'Component 3' }] },
+  { id: 'asset3', components: [{ id: 'comp4', name: 'Component 4' }] },
+];
+
+// מערך מזהי רכיבים
+const componentIds: string[] = ['comp2', 'comp4'];
+
+// עיבוד ראשוני
+const processedAssets = assets.map(asset => {
+  const updatedComponents = asset.components.map(component => {
+    const isLinked = componentIds.includes(component.id); // בודקים אם הרכיב מקושר
+    return { ...component, isLinkedToPerson: isLinked };
+  });
+
+  const hasLinkedComponent = updatedComponents.some(component => component.isLinkedToPerson);
+
+  return { ...asset, components: updatedComponents, hasLinkedComponent };
+});
+
+// פונקציית מיון כללית
+const sortAssets = (assetsToSort: Asset[]) =>
+  assetsToSort.sort((a, b) => {
+    if (a.hasLinkedComponent && !b.hasLinkedComponent) return -1;
+    if (!a.hasLinkedComponent && b.hasLinkedComponent) return 1;
+    return 0;
+  });
+
+// חיפוש ומיון מחדש
+const searchAndSortAssets = (query: string) => {
+  const filteredAssets = processedAssets.filter(asset =>
+    asset.components.some(component => component.name.toLowerCase().includes(query.toLowerCase()))
+  );
+
+  return sortAssets(filteredAssets);
+};
+
+// דוגמה לחיפוש
+const searchQuery = 'Component 2';
+const searchResults = searchAndSortAssets(searchQuery);
+
+console.log(searchResults);
+
