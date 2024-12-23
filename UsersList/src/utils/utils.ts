@@ -43,92 +43,82 @@ export const generateUser = (user: User): UserEntity => {
 };
 
 
-import Joi from 'joi';
+<div class="dropdown-container" [ngClass]="customClass">
+  <div class="dropdown-row" *ngFor="let item of items">
+    <span class="row-title">{{ item.title }}</span>
+    <span class="row-value">{{ item.value }}</span>
+  </div>
+</div>
 
-const userSchema = Joi.object({
-  id: Joi.string().required(),
-  name: Joi.string().required(),
-});
+  @Component({
+  selector: 'app-dropdown',
+  templateUrl: './dropdown.component.html',
+  styleUrls: ['./dropdown.component.less']
+})
+export class DropdownComponent {
+  @Input() customClass: string = ''; // מחלקה מותאמת אישית
+}
 
-const createUserSchema = Joi.alternatives().try(
-  Joi.array().items(userSchema), // אם זו רשימה של משתמשים
-  userSchema // אם זה משתמש יחיד
-).custom((value) => {
-  // אם הערך הוא אובייקט יחיד, עוטפים אותו במערך
-  return Array.isArray(value) ? value : [value];
-}, 'Wrap single user in an array');
 
-export const validateCreateUsers = (req, res, next) => {
-  const { error, value } = createUserSchema.validate(req.body);
 
-  if (error) {
-    return res.status(400).json({ error: error.message });
+<div class="dropdown-container" [ngClass]="customClass">
+  <div class="dropdown-row" *ngFor="let item of items">
+    <span class="row-title">{{ item.title }}</span>
+    <span class="row-value">{{ item.value }}</span>
+  </div>
+</div>
+
+
+  
+.dropdown-container {
+  .dropdown-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f9f9f9; // צבע ברירת מחדל לשורה
+    color: black;
+
+    &:hover {
+      background-color: #e0e0e0; // צבע ברירת מחדל ב-hover
+    }
+
+    &.active {
+      background-color: #d0d0d0; // צבע ברירת מחדל בלחיצה
+    }
   }
 
-  req.body = value; // מעדכנים את ה-body לאחר הלידציה
-  next();
-};
+  // עיצוב מותאם אישית
+  &.custom-theme {
+    .dropdown-row {
+      background-color: #fff5f5;
+      color: red;
 
+      &:hover {
+        background-color: #ffe5e5;
+      }
 
-console.log(sortedExtendedItems);
-
-
-
-
-interface Component {
-  id: string;
-  name: string;
-  isLinkedToPerson?: boolean; // שדה לסימון אם הרכיב מקושר
+      &.active {
+        background-color: #ffcccc;
+      }
+    }
+  }
 }
 
-interface Asset {
-  id: string;
-  components: Component[];
-  hasLinkedComponent?: boolean; // שדה לסימון אם יש רכיבים תואמים
-}
+<!-- דרופדאון עם העיצוב המותאם -->
+<app-dropdown [customClass]="'custom-theme'" [items]="myItems"></app-dropdown>
 
-// מערך הנכסים
-const assets: Asset[] = [
-  { id: 'asset1', components: [{ id: 'comp1', name: 'Component 1' }, { id: 'comp2', name: 'Component 2' }] },
-  { id: 'asset2', components: [{ id: 'comp3', name: 'Component 3' }] },
-  { id: 'asset3', components: [{ id: 'comp4', name: 'Component 4' }] },
-];
+<!-- דרופדאון עם עיצוב ברירת המחדל -->
+<app-dropdown [items]="defaultItems"></app-dropdown>
 
-// מערך מזהי רכיבים
-const componentIds: string[] = ['comp2', 'comp4'];
 
-// עיבוד ראשוני
-const processedAssets = assets.map(asset => {
-  const updatedComponents = asset.components.map(component => {
-    const isLinked = componentIds.includes(component.id); // בודקים אם הרכיב מקושר
-    return { ...component, isLinkedToPerson: isLinked };
-  });
+<div class="dropdown-container" ng-class="dropdown.customClass">
+  <div class="dropdown-row" 
+       ng-repeat="item in dropdown.items" 
+       ng-class="{'hover': dropdown.isHovered(item), 'active': dropdown.isActive(item)}">
+    <span class="row-title">{{ item.title }}</span>
+    <span class="row-value">{{ item.value }}</span>
+  </div>
+</div>
 
-  const hasLinkedComponent = updatedComponents.some(component => component.isLinkedToPerson);
-
-  return { ...asset, components: updatedComponents, hasLinkedComponent };
-});
-
-// פונקציית מיון כללית
-const sortAssets = (assetsToSort: Asset[]) =>
-  assetsToSort.sort((a, b) => {
-    if (a.hasLinkedComponent && !b.hasLinkedComponent) return -1;
-    if (!a.hasLinkedComponent && b.hasLinkedComponent) return 1;
-    return 0;
-  });
-
-// חיפוש ומיון מחדש
-const searchAndSortAssets = (query: string) => {
-  const filteredAssets = processedAssets.filter(asset =>
-    asset.components.some(component => component.name.toLowerCase().includes(query.toLowerCase()))
-  );
-
-  return sortAssets(filteredAssets);
-};
-
-// דוגמה לחיפוש
-const searchQuery = 'Component 2';
-const searchResults = searchAndSortAssets(searchQuery);
-
-console.log(searchResults);
+  
 
