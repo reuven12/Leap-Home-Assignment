@@ -41,33 +41,39 @@ export const generateUser = (user: User): UserEntity => {
   userEntity.avatar = user.avatar;
   return userEntity;
 
-// מחלקת האב
-class Excel<THeaders extends readonly string[]> {
-  headersType!: THeaders; // הגדרת ה-Type בלבד
-}
+// מחלקת הבסיס
+class Base<THeaders extends readonly string[]> {
+  // מחלקת הבסיס אינה צריכה את headers בקונסטרוקטור
+  protected headersType!: THeaders;
 
-// מחלקת הבת
-class ExcelPeople extends Excel<HeaderType> {
-  // פונקציה סטטית שמחזירה את מערך ה-Headers המתאים
-  static getHeaders(condition: string) {
-    const headersMap = {
-      basic: ["name", "age"] as const,
-      detailed: ["name", "age", "rank", "address"] as const,
-      minimal: ["name"] as const,
-    };
-
-    // מחזיר את המערך המתאים לפי התנאי
-    return headersMap[condition];
+  printHeadersType() {
+    console.log(this.headersType);
   }
 }
 
-// הגדרת ה-Type בצורה אוטומטית על בסיס הפונקציה
-type HeaderType = ReturnType<typeof ExcelPeople["getHeaders"]>;
+// מחלקת האקסל
+class PeopleExcel extends Base<typeof PeopleExcel.headers> {
+  // headers מוגדר במחלקה הנגזרת
+  static headers = ["age", "name", "address"] as const;
+
+  constructor() {
+    super(); // קריאה לקונסטרוקטור מחלקת הבסיס
+  }
+
+  // פונקציה שמחזירה את headers בזמן ריצה
+  getHeaders(): typeof PeopleExcel.headers {
+    return PeopleExcel.headers;
+  }
+}
 
 // שימוש
-const headers = ExcelPeople.getHeaders("detailed"); // מחזיר ["name", "age", "rank", "address"]
-const minimalHeaders = ExcelPeople.getHeaders("minimal"); // מחזיר ["name"]
+const peopleExcel = new PeopleExcel();
+const headers = peopleExcel.getHeaders(); // ["age", "name", "address"]
+console.log(headers);
 
-// בדוגמה זו, ה-Type משתנה בהתאם למערך שהוחזר
+// חילוץ הטייפ
+type PeopleHeaders = (typeof PeopleExcel.headers)[number];
 
-  
+// שימוש בטייפ
+const exampleHeader: PeopleHeaders = "name"; // תקין
+// const invalidHeader: PeopleHeaders = "invalid"; // שגיאה
