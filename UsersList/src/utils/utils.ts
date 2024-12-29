@@ -40,85 +40,35 @@ export const generateUser = (user: User): UserEntity => {
   userEntity.email = user.email;
   userEntity.avatar = user.avatar;
   return userEntity;
-};
 
 
-<div class="dropdown-container" [ngClass]="customClass">
-  <div class="dropdown-row" *ngFor="let item of items">
-    <span class="row-title">{{ item.title }}</span>
-    <span class="row-value">{{ item.value }}</span>
-  </div>
-</div>
+  class Excel<T extends readonly string[]> {
+  constructor(public headers: T) {}
 
-  @Component({
-  selector: 'app-dropdown',
-  templateUrl: './dropdown.component.html',
-  styleUrls: ['./dropdown.component.less']
-})
-export class DropdownComponent {
-  @Input() customClass: string = ''; // מחלקה מותאמת אישית
-}
-
-
-
-<div class="dropdown-container" [ngClass]="customClass">
-  <div class="dropdown-row" *ngFor="let item of items">
-    <span class="row-title">{{ item.title }}</span>
-    <span class="row-value">{{ item.value }}</span>
-  </div>
-</div>
-
-
-  
-.dropdown-container {
-  .dropdown-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    background-color: #f9f9f9; // צבע ברירת מחדל לשורה
-    color: black;
-
-    &:hover {
-      background-color: #e0e0e0; // צבע ברירת מחדל ב-hover
-    }
-
-    &.active {
-      background-color: #d0d0d0; // צבע ברירת מחדל בלחיצה
-    }
-  }
-
-  // עיצוב מותאם אישית
-  &.custom-theme {
-    .dropdown-row {
-      background-color: #fff5f5;
-      color: red;
-
-      &:hover {
-        background-color: #ffe5e5;
-      }
-
-      &.active {
-        background-color: #ffcccc;
-      }
-    }
+  printHeaders() {
+    console.log(this.headers);
   }
 }
 
-<!-- דרופדאון עם העיצוב המותאם -->
-<app-dropdown [customClass]="'custom-theme'" [items]="myItems"></app-dropdown>
+class ExcelPeople extends Excel<HeaderPersonHeaders> {
+  constructor() {
+    super(ExcelPeople.generateHeaders());
+  }
 
-<!-- דרופדאון עם עיצוב ברירת המחדל -->
-<app-dropdown [items]="defaultItems"></app-dropdown>
+  static generateHeaders() {
+    // לוגיקה דינמית ליצירת headers
+    const headers = ["ID", "Name", "Rank"] as const;
+    return headers;
+  }
+}
 
+// מגדיר את ה-type עבור headers
+type HeaderPersonHeaders = ReturnType<typeof ExcelPeople.generateHeaders>;
 
-<div class="dropdown-container" ng-class="dropdown.customClass">
-  <div class="dropdown-row" 
-       ng-repeat="item in dropdown.items" 
-       ng-class="{'hover': dropdown.isHovered(item), 'active': dropdown.isActive(item)}">
-    <span class="row-title">{{ item.title }}</span>
-    <span class="row-value">{{ item.value }}</span>
-  </div>
-</div>
+// שימוש במחלקה
+const excelPeople = new ExcelPeople();
+excelPeople.printHeaders();
+
 
   
 
