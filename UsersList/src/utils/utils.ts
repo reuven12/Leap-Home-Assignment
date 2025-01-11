@@ -41,39 +41,57 @@ export const generateUser = (user: User): UserEntity => {
   userEntity.avatar = user.avatar;
   return userEntity;
 
-// מחלקת הבסיס
-class Base<THeaders extends readonly string[]> {
-  // מחלקת הבסיס אינה צריכה את headers בקונסטרוקטור
-  protected headersType!: THeaders;
 
-  printHeadersType() {
-    console.log(this.headersType);
+
+  
+  
+import { Subject } from "rxjs";
+
+class MySystem {
+  private changesSubject = new Subject<void>();
+
+  // פונקציה שתאפשר האזנה
+  public getChangesObservable() {
+    return this.changesSubject.asObservable();
+  }
+
+  // פליטת שינויים
+  private emitChange(): void {
+    this.changesSubject.next();
+  }
+
+  // דוגמה לעדכון מידע
+  public updateData(newData: any): void {
+    // בצע עדכון...
+    this.emitChange();
   }
 }
 
-// מחלקת האקסל
-class PeopleExcel extends Base<typeof PeopleExcel.headers> {
-  // headers מוגדר במחלקה הנגזרת
-  static headers = ["age", "name", "address"] as const;
+export const mySystem = new MySystem();
 
-  constructor() {
-    super(); // קריאה לקונסטרוקטור מחלקת הבסיס
-  }
 
-  // פונקציה שמחזירה את headers בזמן ריצה
-  getHeaders(): typeof PeopleExcel.headers {
-    return PeopleExcel.headers;
-  }
-}
 
-// שימוש
-const peopleExcel = new PeopleExcel();
-const headers = peopleExcel.getHeaders(); // ["age", "name", "address"]
-console.log(headers);
+  import React, { useEffect, useState } from "react";
+import { mySystem } from "./MySystem";
 
-// חילוץ הטייפ
-type PeopleHeaders = (typeof PeopleExcel.headers)[number];
+const MyComponent: React.FC = () => {
+  const [data, setData] = useState<string>("Initial Data");
 
-// שימוש בטייפ
-const exampleHeader: PeopleHeaders = "name"; // תקין
-// const invalidHeader: PeopleHeaders = "invalid"; // שגיאה
+  useEffect(() => {
+    const subscription = mySystem.getChangesObservable().subscribe(() => {
+      // עדכון סטייט או כל פעולה אחרת
+      setData("Data Updated");
+    });
+
+    // ניקוי הסבסקריפשן
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  return <div>Data: {data}</div>;
+};
+
+export default MyComponent;
+
+  
