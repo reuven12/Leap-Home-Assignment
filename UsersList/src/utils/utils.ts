@@ -43,55 +43,21 @@ export const generateUser = (user: User): UserEntity => {
 
 
 
+merge(
+  this.timelineChanges$,  // שינוי בטיימליין → שליפה חדשה
+  interval(10000)         // כל 10 שניות → שליפה חדשה
+).pipe(
+  switchMap(() => forkJoin([
+    this.engine1$,
+    this.engine2$,
+    this.engine3$,
+    this.engine4$,
+    this.engine5$
+  ])) // forkJoin מחכה שכל המידע יגיע לפני עדכון הקומפוננטה
+).subscribe(data => {
+  console.log("Updated data:", data);
+});
   
   
-import { Subject } from "rxjs";
-
-class MySystem {
-  private changesSubject = new Subject<void>();
-
-  // פונקציה שתאפשר האזנה
-  public getChangesObservable() {
-    return this.changesSubject.asObservable();
-  }
-
-  // פליטת שינויים
-  private emitChange(): void {
-    this.changesSubject.next();
-  }
-
-  // דוגמה לעדכון מידע
-  public updateData(newData: any): void {
-    // בצע עדכון...
-    this.emitChange();
-  }
-}
-
-export const mySystem = new MySystem();
-
-
-
-  import React, { useEffect, useState } from "react";
-import { mySystem } from "./MySystem";
-
-const MyComponent: React.FC = () => {
-  const [data, setData] = useState<string>("Initial Data");
-
-  useEffect(() => {
-    const subscription = mySystem.getChangesObservable().subscribe(() => {
-      // עדכון סטייט או כל פעולה אחרת
-      setData("Data Updated");
-    });
-
-    // ניקוי הסבסקריפשן
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  return <div>Data: {data}</div>;
-};
-
-export default MyComponent;
-
+  
   
