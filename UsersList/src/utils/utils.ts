@@ -42,6 +42,9 @@ export const generateUser = (user: User): UserEntity => {
   return userEntity;
 
 
+
+  import { combineLatest, Observable } from 'rxjs';
+import { distinctUntilChanged, map, scan } from 'rxjs/operators';
 import { isEqual } from 'lodash';
 
 export const createPersonGroupingInfoStream = ({
@@ -52,41 +55,50 @@ export const createPersonGroupingInfoStream = ({
   confidenceLevelsStream,
   timeRangeStream
 }: personGroupingUpstream): Observable<IPersonGroupingInformation[]> => {
-  return combineLatest([
+  const streams = [
     personsStream.pipe(distinctUntilChanged(isEqual)),
     personsInfoStream.pipe(distinctUntilChanged(isEqual)),
     eventsMapStream.pipe(distinctUntilChanged(isEqual)),
     anticipationSourcesStream.pipe(distinctUntilChanged(isEqual)),
     confidenceLevelsStream.pipe(distinctUntilChanged()),
     timeRangeStream.pipe(distinctUntilChanged())
-  ])
-  .pipe(
-    debounceTime(300), // מניעת עדכונים תכופים
-    map(([persons, personsInformation, eventsMap, anticipationSources, confidenceLevelsToConsider, timeRange]) => {
-      return persons.map(person => {
-        const informationOfPerson = personsInformation.find(
-          personInfo => personInfo.id === person.PersonId
-        );
-        const events: UnionPersonAnticipation[] = [];
-        if (eventsMap) {
-          console.log('eventsMap', eventsMap);
-          events.push(...(eventsMap[person.PersonId] ?? []));
-        }
-        return {
-          Person: person,
-          PersonInformation: informationOfPerson,
-          anticipations: events,
-          anticipationSources,
-          confidenceLevelsToConsider,
-          timeRange
-        };
-      });
-    }),
-    distinctUntilChanged(isEqual) // השוואה עמוקה ברמת הפלט
+  ];
+
+  return combineLatest(streams).pipe(
+    scan(
+      (prevState, [persons, personsInfo, eventsMap, anticipationSources, confidenceLevels, timeRange]) => ({
+        persons: !isEqual(prevState.persons, persons) ? persons : prevState.persons,
+        personsInfo: !isEqual(prevState.personsInfo, personsInfo) ? personsInfo : prevState.personsInfo,
+        eventsMap: !isEqual(prevState.eventsMap, eventsMap) ? eventsMap : prevState.eventsMap,
+        anticipationSources: !isEqual(prevState.anticipationSources, anticipationSources)
+          ? anticipationSources
+          : prevState.anticipationSources,
+        confidenceLevels: !isEqual(prevState.confidenceLevels, confidenceLevels)
+          ? confidenceLevels
+          : prevState.confidenceLevels,
+        timeRange: !isEqual(prevState.timeRange, timeRange) ? timeRange : prevState.timeRange
+      }),
+      {
+        persons: [],
+        personsInfo: [],
+        eventsMap: {},
+        anticipationSources: {},
+        confidenceLevels: [],
+        timeRange: null
+      }
+    ),
+    map(({ persons, personsInfo, eventsMap, anticipationSources, confidenceLevels, timeRange }) =>
+      persons.map(person => ({
+        Person: person,
+        PersonInformation: personsInfo.find(info => info.id === person.PersonId),
+        anticipations: eventsMap?.[person.PersonId] ?? [],
+        anticipationSources,
+        confidenceLevels,
+        timeRange
+      }))
+    )
   );
 };
 
-  
-  
   
   
