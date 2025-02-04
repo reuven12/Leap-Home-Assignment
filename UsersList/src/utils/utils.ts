@@ -43,62 +43,40 @@ export const generateUser = (user: User): UserEntity => {
 
 
 
-  import { combineLatest, Observable } from 'rxjs';
-import { distinctUntilChanged, map, scan } from 'rxjs/operators';
-import { isEqual } from 'lodash';
+import { merge, Observable } from 'rxjs';
+import { map, distinctUntilChanged, shareReplay } from 'rxjs/operators';
 
 export const createPersonGroupingInfoStream = ({
-  personsStream,
   personsInfoStream,
+  personsStream,
   eventsMapStream,
   anticipationSourcesStream,
   confidenceLevelsStream,
-  timeRangeStream
-}: personGroupingUpstream): Observable<IPersonGroupingInformation[]> => {
-  const streams = [
-    personsStream.pipe(distinctUntilChanged(isEqual)),
-    personsInfoStream.pipe(distinctUntilChanged(isEqual)),
-    eventsMapStream.pipe(distinctUntilChanged(isEqual)),
-    anticipationSourcesStream.pipe(distinctUntilChanged(isEqual)),
-    confidenceLevelsStream.pipe(distinctUntilChanged()),
-    timeRangeStream.pipe(distinctUntilChanged())
-  ];
+  timeRangeStream,
+}: {
+  personsInfoStream: Observable<PersonInformation[]>;
+  personsStream: Observable<Person[]>;
+  eventsMapStream: Observable<Record<number, UnionPersonAnticipation[]>>;
+  anticipationSourcesStream: Observable<AnticipationSource[]>;
+  confidenceLevelsStream: Observable<number[]>;
+  timeRangeStream: Observable<TimeRange>;
+}): Observable<Partial<PersonGroupingInformation>> => {
+  const createStream = <T>(stream: Observable<T>, key: keyof PersonGroupingInformation) =>
+    stream.pipe(
+      distinctUntilChanged(),
+      map((value) => ({ [key]: value }))
+    );
 
-  return combineLatest(streams).pipe(
-    scan(
-      (prevState, [persons, personsInfo, eventsMap, anticipationSources, confidenceLevels, timeRange]) => ({
-        persons: !isEqual(prevState.persons, persons) ? persons : prevState.persons,
-        personsInfo: !isEqual(prevState.personsInfo, personsInfo) ? personsInfo : prevState.personsInfo,
-        eventsMap: !isEqual(prevState.eventsMap, eventsMap) ? eventsMap : prevState.eventsMap,
-        anticipationSources: !isEqual(prevState.anticipationSources, anticipationSources)
-          ? anticipationSources
-          : prevState.anticipationSources,
-        confidenceLevels: !isEqual(prevState.confidenceLevels, confidenceLevels)
-          ? confidenceLevels
-          : prevState.confidenceLevels,
-        timeRange: !isEqual(prevState.timeRange, timeRange) ? timeRange : prevState.timeRange
-      }),
-      {
-        persons: [],
-        personsInfo: [],
-        eventsMap: {},
-        anticipationSources: {},
-        confidenceLevels: [],
-        timeRange: null
-      }
-    ),
-    map(({ persons, personsInfo, eventsMap, anticipationSources, confidenceLevels, timeRange }) =>
-      persons.map(person => ({
-        Person: person,
-        PersonInformation: personsInfo.find(info => info.id === person.PersonId),
-        anticipations: eventsMap?.[person.PersonId] ?? [],
-        anticipationSources,
-        confidenceLevels,
-        timeRange
-      }))
-    )
-  );
+  return merge(
+    createStream(personsInfoStream, 'personsInformation'),
+    createStream(personsStream, 'persons'),
+    createStream(eventsMapStream, 'eventsMap'),
+    createStream(anticipationSourcesStream, 'anticipationSources'),
+    createStream(confidenceLevelsStream, 'confidenceLevelsToConsider'),
+    createStream(timeRangeStream, 'timeRange')
+  ).pipe(shareReplay(1));
 };
+
 
   
   
