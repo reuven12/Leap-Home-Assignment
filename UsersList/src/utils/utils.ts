@@ -42,21 +42,50 @@ export const generateUser = (user: User): UserEntity => {
   return userEntity;
 
 
+import { isEqual } from 'lodash';
 
-merge(
-  this.timelineChanges$,  // שינוי בטיימליין → שליפה חדשה
-  interval(10000)         // כל 10 שניות → שליפה חדשה
-).pipe(
-  switchMap(() => forkJoin([
-    this.engine1$,
-    this.engine2$,
-    this.engine3$,
-    this.engine4$,
-    this.engine5$
-  ])) // forkJoin מחכה שכל המידע יגיע לפני עדכון הקומפוננטה
-).subscribe(data => {
-  console.log("Updated data:", data);
-});
+export const createPersonGroupingInfoStream = ({
+  personsStream,
+  personsInfoStream,
+  eventsMapStream,
+  anticipationSourcesStream,
+  confidenceLevelsStream,
+  timeRangeStream
+}: personGroupingUpstream): Observable<IPersonGroupingInformation[]> => {
+  return combineLatest([
+    personsStream.pipe(distinctUntilChanged(isEqual)),
+    personsInfoStream.pipe(distinctUntilChanged(isEqual)),
+    eventsMapStream.pipe(distinctUntilChanged(isEqual)),
+    anticipationSourcesStream.pipe(distinctUntilChanged(isEqual)),
+    confidenceLevelsStream.pipe(distinctUntilChanged()),
+    timeRangeStream.pipe(distinctUntilChanged())
+  ])
+  .pipe(
+    debounceTime(300), // מניעת עדכונים תכופים
+    map(([persons, personsInformation, eventsMap, anticipationSources, confidenceLevelsToConsider, timeRange]) => {
+      return persons.map(person => {
+        const informationOfPerson = personsInformation.find(
+          personInfo => personInfo.id === person.PersonId
+        );
+        const events: UnionPersonAnticipation[] = [];
+        if (eventsMap) {
+          console.log('eventsMap', eventsMap);
+          events.push(...(eventsMap[person.PersonId] ?? []));
+        }
+        return {
+          Person: person,
+          PersonInformation: informationOfPerson,
+          anticipations: events,
+          anticipationSources,
+          confidenceLevelsToConsider,
+          timeRange
+        };
+      });
+    }),
+    distinctUntilChanged(isEqual) // השוואה עמוקה ברמת הפלט
+  );
+};
+
   
   
   
