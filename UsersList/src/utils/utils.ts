@@ -42,40 +42,48 @@ export const generateUser = (user: User): UserEntity => {
   return userEntity;
 
 
-
-import { merge, Observable } from 'rxjs';
-import { map, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-
-export const createPersonGroupingInfoStream = ({
-  personsInfoStream,
-  personsStream,
-  eventsMapStream,
-  anticipationSourcesStream,
-  confidenceLevelsStream,
-  timeRangeStream,
-}: {
-  personsInfoStream: Observable<PersonInformation[]>;
-  personsStream: Observable<Person[]>;
-  eventsMapStream: Observable<Record<number, UnionPersonAnticipation[]>>;
-  anticipationSourcesStream: Observable<AnticipationSource[]>;
-  confidenceLevelsStream: Observable<number[]>;
-  timeRangeStream: Observable<TimeRange>;
-}): Observable<Partial<PersonGroupingInformation>> => {
-  const createStream = <T>(stream: Observable<T>, key: keyof PersonGroupingInformation) =>
-    stream.pipe(
-      distinctUntilChanged(),
-      map((value) => ({ [key]: value }))
-    );
-
-  return merge(
-    createStream(personsInfoStream, 'personsInformation'),
-    createStream(personsStream, 'persons'),
-    createStream(eventsMapStream, 'eventsMap'),
-    createStream(anticipationSourcesStream, 'anticipationSources'),
-    createStream(confidenceLevelsStream, 'confidenceLevelsToConsider'),
-    createStream(timeRangeStream, 'timeRange')
-  ).pipe(shareReplay(1));
+type Event = {
+  id: string;
+  startTime: number;
+  endTime: number;
 };
+
+// פונקציה לעדכון רשימת האירועים תוך שמירה על רפרנס קיים
+const updateEvents = (currentEvents: Event[], newEvents: Event[], selectedTime: number): Event[] => {
+  // סינון האירועים הישנים כך שיישארו רק אלה שעדיין רלוונטיים לנקודת הזמן החדשה
+  const relevantOldEvents = currentEvents.filter(event => 
+    selectedTime >= event.startTime && selectedTime <= event.endTime
+  );
+
+  // יצירת Map כדי לזהות אירועים חדשים שאין ברשימה הישנה
+  const existingEventIds = new Set(relevantOldEvents.map(event => event.id));
+
+  // הוספת אירועים חדשים שאינם קיימים ברשימה הישנה
+  const mergedEvents = [
+    ...relevantOldEvents, 
+    ...newEvents.filter(event => !existingEventIds.has(event.id))
+  ];
+
+  return mergedEvents;
+};
+
+// דוגמה לשימוש:
+let currentEvents: Event[] = [
+  { id: "1", startTime: 100, endTime: 200 },
+  { id: "2", startTime: 150, endTime: 250 }
+];
+
+const newEvents: Event[] = [
+  { id: "2", startTime: 150, endTime: 250 }, // נשאר כי הוא רלוונטי
+  { id: "3", startTime: 200, endTime: 300 }  // חדש
+];
+
+const selectedTime = 175;
+
+currentEvents = updateEvents(currentEvents, newEvents, selectedTime);
+
+console.log(currentEvents);
+
 
 
   
