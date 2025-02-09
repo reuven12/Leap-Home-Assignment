@@ -41,50 +41,16 @@ export const generateUser = (user: User): UserEntity => {
   userEntity.avatar = user.avatar;
   return userEntity;
 
-
-type Event = {
-  id: string;
-  startTime: number;
-  endTime: number;
+const deepCloneWithNewArrayReferences = (obj: Record<string, any>): Record<string, any> => {
+    return Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => ({
+            [key]: {
+                ...value,
+                items: Array.isArray(value.items) ? [...value.items] : value.items // שינוי הרפרנס של המערך
+            }
+        }))
+    );
 };
 
-// פונקציה לעדכון רשימת האירועים תוך שמירה על רפרנס קיים
-const updateEvents = (currentEvents: Event[], newEvents: Event[], selectedTime: number): Event[] => {
-  // סינון האירועים הישנים כך שיישארו רק אלה שעדיין רלוונטיים לנקודת הזמן החדשה
-  const relevantOldEvents = currentEvents.filter(event => 
-    selectedTime >= event.startTime && selectedTime <= event.endTime
-  );
+  const newData = structuredClone(data);
 
-  // יצירת Map כדי לזהות אירועים חדשים שאין ברשימה הישנה
-  const existingEventIds = new Set(relevantOldEvents.map(event => event.id));
-
-  // הוספת אירועים חדשים שאינם קיימים ברשימה הישנה
-  const mergedEvents = [
-    ...relevantOldEvents, 
-    ...newEvents.filter(event => !existingEventIds.has(event.id))
-  ];
-
-  return mergedEvents;
-};
-
-// דוגמה לשימוש:
-let currentEvents: Event[] = [
-  { id: "1", startTime: 100, endTime: 200 },
-  { id: "2", startTime: 150, endTime: 250 }
-];
-
-const newEvents: Event[] = [
-  { id: "2", startTime: 150, endTime: 250 }, // נשאר כי הוא רלוונטי
-  { id: "3", startTime: 200, endTime: 300 }  // חדש
-];
-
-const selectedTime = 175;
-
-currentEvents = updateEvents(currentEvents, newEvents, selectedTime);
-
-console.log(currentEvents);
-
-
-
-  
-  
