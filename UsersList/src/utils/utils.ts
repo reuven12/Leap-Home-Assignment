@@ -41,16 +41,13 @@ export const generateUser = (user: User): UserEntity => {
   userEntity.avatar = user.avatar;
   return userEntity;
 
-const deepCloneWithNewArrayReferences = (obj: Record<string, any>): Record<string, any> => {
-    return Object.fromEntries(
-        Object.entries(obj).map(([key, value]) => ({
-            [key]: {
-                ...value,
-                items: Array.isArray(value.items) ? [...value.items] : value.items // שינוי הרפרנס של המערך
-            }
-        }))
-    );
+import { useDeepCompareMemo } from "use-deep-compare";
+
+const ChildComponent = ({ complexObject }: { complexObject: any }) => {
+  const memoizedValue = useDeepCompareMemo(() => {
+    console.log("useMemo executed");
+    return complexObject.value * 2;
+  }, [complexObject]); // במקום [complexObject], הספרייה עושה השוואה עמוקה
+
+  return <div>Computed Value: {memoizedValue}</div>;
 };
-
-  const newData = structuredClone(data);
-
