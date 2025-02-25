@@ -41,13 +41,72 @@ export const generateUser = (user: User): UserEntity => {
   userEntity.avatar = user.avatar;
   return userEntity;
 
-import { useDeepCompareMemo } from "use-deep-compare";
+.card {
+  width: 200px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  direction: rtl;
+  cursor: pointer;
+  position: relative;
+}
 
-const ChildComponent = ({ complexObject }: { complexObject: any }) => {
-  const memoizedValue = useDeepCompareMemo(() => {
-    console.log("useMemo executed");
-    return complexObject.value * 2;
-  }, [complexObject]); // במקום [complexObject], הספרייה עושה השוואה עמוקה
+.icon-wrapper {
+  width: 24px;
+  height: 24px;
+  position: relative;
 
-  return <div>Computed Value: {memoizedValue}</div>;
+  .icon {
+    position: absolute;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .icon.user {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .icon.eye {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+.card:hover .icon.user {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.card:hover .icon.eye {
+  opacity: 1;
+  transform: scale(1);
+}
+
+
+
+  import React from "react";
+import { FaUser, FaEye } from "react-icons/fa";
+import "./PersonCard.less"; // ייבוא קובץ ה-LESS
+
+const PersonCard: React.FC = () => {
+  return (
+    <div className="card">
+      <div>שם המשתמש</div>
+      <div className="icon-wrapper">
+        <span className="icon user">
+          <FaUser size={24} />
+        </span>
+        <span className="icon eye">
+          <FaEye size={24} />
+        </span>
+      </div>
+    </div>
+  );
 };
+
+export default PersonCard;
+
